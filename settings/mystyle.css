@@ -1,0 +1,3 @@
+
+table, th, td{border: 1px solid black;}table{table-layout:fixed;text-align:left;margin-left:auto;margin-right:auto;width:90%;}td{word-wrap:break-word;}table.sortable thead{background-color: green;color: white;font-weight: bold;cursor: default;}
+

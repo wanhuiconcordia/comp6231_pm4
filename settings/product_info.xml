@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<products>
+  <product>
+    <productType>DVD player</productType>
+  </product>
+  <product>
+    <productType>TV</productType>
+  </product>
+  <product>
+    <productType>video camera</productType>
+  </product>
+</products>
