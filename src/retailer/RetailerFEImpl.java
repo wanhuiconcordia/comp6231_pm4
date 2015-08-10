@@ -48,7 +48,7 @@ public class RetailerFEImpl implements RetailerInterface {
 		
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
-		System.out.println(name + " udp channal:" + host + ":" + port);
+		System.out.println(name + " udp channel:" + host + ":" + port);
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");

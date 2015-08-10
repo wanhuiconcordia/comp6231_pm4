@@ -14,7 +14,7 @@ public class RetailerSequencer {
 		name = "RetailerSequencer";
 		String host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
-		System.out.println(name + " udp channal:" + host + ":" + port);
+		System.out.println(name + " udp channel:" + host + ":" + port);
 		
 		ChannelManager channelManager = new ChannelManager();
 		
