@@ -42,7 +42,7 @@ public class RetailerFEImpl implements RetailerInterface {
 //		warehouseList = new ArrayList<WarehouseInterface>();
 		//this.loggerClient = new LoggerClient();
 		customerManager = new CustomerManager("customers.xml");
-		loggerClient = new LoggerClient();
+		loggerClient = new LoggerClient(name);
 		//this.connectWarehouses();
 		ChannelManager channelManager = new ChannelManager();
 		

@@ -14,15 +14,15 @@ public class LoggerClient {
 	boolean connected = false;
 	private Socket clientSocket;
 	private DataOutputStream dataOutputStream;
-	
+	private String sender;
 	/**
 	 * constructor
 	 * load the logger_client_settings.conf file, and create a new clientSocket according to the info in the file
 	 * create a dataOutputStream according to the clientSocket
 	 */
-	public LoggerClient(){
-		//ConfigureManager.getInstance().loadFile("./settings/settings.conf");
+	public LoggerClient(String sender){
 		try {
+			this.sender = sender;
 			clientSocket = new Socket(ConfigureManager.getInstance().getString("loggerServerName", "localhost"),
 					ConfigureManager.getInstance().getInt("loggerServerPort", 2020));
 			OutputStream outputStream = clientSocket.getOutputStream();
@@ -42,7 +42,7 @@ public class LoggerClient {
 	public boolean write(String msg){
 		if(connected){
 			try {
-				dataOutputStream.writeUTF(msg);
+				dataOutputStream.writeUTF(sender +":  " + msg);
 				return true;
 			} catch (IOException e) {
 				e.printStackTrace();

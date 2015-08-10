@@ -37,7 +37,7 @@ public class Client
 	public Client(){
 		name = "client";
 		in = new Scanner(System.in);
-		loggerClient = new LoggerClient();
+		loggerClient = new LoggerClient(name);
 		retailerItemCatalog = new ArrayList<Item>();
 	}
 	
