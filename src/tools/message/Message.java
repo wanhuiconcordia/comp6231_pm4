@@ -14,6 +14,9 @@ public abstract class Message implements Serializable{
 	}
 	
 	public String toString(){
-		return sender + ", " + senderSeq + ", " + receiverSeq + ", " + action;  
+		return sender 
+				+ ", " + senderSeq 
+				+ ", " + receiverSeq 
+				+ ", " + action;  
 	}
 }
