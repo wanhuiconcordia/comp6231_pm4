@@ -5,13 +5,15 @@ public abstract class Message implements Serializable{
 	public int senderSeq;
 	public int receiverSeq;
 	public Action action;
-	boolean needAck;
 	
-	public Message(String sender, int senderSeq, int receiverSeq, Action action, boolean needAck){
+	public Message(String sender, int senderSeq, int receiverSeq, Action action){
 		this.sender = sender;
 		this.senderSeq = senderSeq;
 		this.receiverSeq = receiverSeq;
 		this.action = action;
-		this.needAck = needAck;
+	}
+	
+	public String toString(){
+		return sender + ", " + senderSeq + ", " + receiverSeq + ", " + action;  
 	}
 }

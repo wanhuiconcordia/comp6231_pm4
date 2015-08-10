@@ -1,5 +1,5 @@
 package tools;
 
 public enum Action {
-	getCatelog, signUp, signIn
+	ACK, INIT, signUp, signIn, getCatelog, submitOrder, test
 }

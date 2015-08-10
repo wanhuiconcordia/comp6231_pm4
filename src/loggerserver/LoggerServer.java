@@ -138,7 +138,7 @@ public class LoggerServer extends Thread{
 	{
 		try
 		{
-			ConfigureManager.getInstance().loadFile("./settings/logger_server_settings.conf");
+//			ConfigureManager.getInstance().loadFile("./settings/settings.conf");
 			LoggerServer loggerServer = new LoggerServer();
 			loggerServer.start();
 			
