@@ -1,6 +1,7 @@
 import java.net.SocketException;
 
 import tools.channel.Channel;
+import tools.channel.Group;
 import tools.channel.NetworkIO;
 import tools.message.RetailerFEGetCatelogMessage;
 import tools.message.RetailerFESignInMessage;
@@ -8,7 +9,7 @@ public class UDPSocketServer {
 	
 	public static void main(String[] args) {
 		try {
-			Channel channel = new Channel("server", "192.168.12.109", 6789);
+			Channel channel = new Channel("UDPSocketClient", "UDPSocketServer", "localhost", 6789, Group.RetailerFE, null);
 			NetworkIO networkIO = new NetworkIO(9876);
 			networkIO.receiveMessage();
 			

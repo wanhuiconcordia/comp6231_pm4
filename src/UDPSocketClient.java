@@ -4,15 +4,17 @@ import tools.Item;
 import tools.ItemList;
 import tools.Product;
 import tools.channel.Channel;
+import tools.channel.Group;
 import tools.channel.NetworkIO;
+import tools.message.MessageProcesser;
 import tools.message.RetailerFEGetCatelogMessage;
 import tools.message.RetailerFESignInMessage;
 import tools.message.TestMessage;
 public class UDPSocketClient {
     public static void main(String[] args) {
     	try {
-    		Channel channel = new Channel("client", "192.168.12.109", 9876);
-    		
+    		Channel channel = new Channel("UDPSocketServer", "UDPSocketClient", "localhost", 9876, Group.RetailerFE, null);
+    		//public Channel(String localProcessName, String peerProcessName, String peerHost, int peerPort, Group group, MessageProcesser messageProcesser){
 			NetworkIO networkIO = new NetworkIO(6789);
 //			networkIO.sendMsg(new RetailerFEGetCatelogMessage(channel.peerName, channel.localSeq, channel.peerSeq), channel.peerHost, channel.peerPort);
 //			networkIO.sendMsg(new RetailerFESignInMessage(channel.peerName, channel.localSeq, channel.peerSeq, 122, "password123"), channel.peerHost, channel.peerPort);

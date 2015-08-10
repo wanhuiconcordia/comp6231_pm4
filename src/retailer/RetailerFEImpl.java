@@ -12,7 +12,6 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import retailer.CustomerManager;
-import sequencer.retailerSequencer.RetailerSequencer;
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -23,8 +22,8 @@ import tools.LoggerClient;
 import tools.SignUpResult;
 //import warehouse.WarehouseInterface;
 import tools.channel.Channel;
-import tools.channel.NetworkIO;
-import tools.message.Message;
+import tools.channel.ChannelManager;
+import tools.channel.Group;
 
 @WebService(endpointInterface = "retailer.RetailerInterface")
 public class RetailerFEImpl implements RetailerInterface {
@@ -33,11 +32,7 @@ public class RetailerFEImpl implements RetailerInterface {
 	public LoggerClient loggerClient;
 	//private ArrayList<WarehouseInterface> warehouseList;
 	public String name;
-	public HashMap<String, Channel> channelMap;
-	public ReadThread readThread;
-	public WriteThread writeThread;
-	public NetworkIO networkIO;
-	
+	ChannelManager channelManager; 	
 	/**
 	 * Constructor
 	 * @param name
@@ -47,69 +42,59 @@ public class RetailerFEImpl implements RetailerInterface {
 //		warehouseList = new ArrayList<WarehouseInterface>();
 		//this.loggerClient = new LoggerClient();
 		customerManager = new CustomerManager("customers.xml");
+		loggerClient = new LoggerClient();
 		//this.connectWarehouses();
+		ChannelManager channelManager = new ChannelManager();
 		
-		channelMap = new HashMap<String, Channel>();
-
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
-		
 		System.out.println(name + " udp channal:" + host + ":" + port);
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
-		channelMap.put("RetailerSequencerHost", new Channel("RetailerSequencerHost", host, port));
-		System.out.println("Udp channal to RetailerSequencer:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port
+				, Group.RetailerSequencer, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica1Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica1Port");
-		channelMap.put("RetailerReplica1", new Channel("RetailerReplica1", host, port));
-		System.out.println("Udp channal to RetailerReplica1:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerReplica1", host, port
+				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
+		
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica2Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica2Port");
-		channelMap.put("RetailerReplica2", new Channel("RetailerReplica2", host, port));
-		System.out.println("Udp channal to RetailerReplica2:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerReplica2", host, port
+				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica3Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica3Port");
-		channelMap.put("RetailerReplica3", new Channel("RetailerReplica3", host, port));
-		System.out.println("Udp channal to RetailerReplica3:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerReplica3", host, port
+				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica4Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica4Port");
-		channelMap.put("RetailerReplica4", new Channel("RetailerReplica4", host, port));
-		System.out.println("Udp channal to RetailerReplica4:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerReplica4", host, port
+				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM1Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM1Port");
-		channelMap.put("RetailerRM1", new Channel("RetailerRM1", host, port));
-		System.out.println("Udp channal to RetailerRM1:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerRM1", host, port
+				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM2Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM2Port");
-		channelMap.put("RetailerRM2", new Channel("RetailerRM2", host, port));
-		System.out.println("Udp channal to RetailerRM2:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerRM2", host, port
+				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM3Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM3Port");
-		channelMap.put("RetailerRM3", new Channel("RetailerRM3", host, port));
-		System.out.println("Udp channal to RetailerRM3:" + host + ":" + port);
+		channelManager.addChannel(new Channel(name, "RetailerRM3", host, port
+				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM4Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM4Port");
-		channelMap.put("RetailerRM4", new Channel("RetailerRM4", host, port));
-		System.out.println("Udp channal to RetailerRM4:" + host + ":" + port);
-		
-		networkIO = new NetworkIO(ConfigureManager.getInstance().getInt("RetailerFEPort"));
-		
-		readThread = new ReadThread(this);
-		writeThread = new WriteThread(this);
-		
-		
-		
-		readThread.start();
-		writeThread.start();
+		channelManager.addChannel(new Channel(name, "RetailerRM4", host, port
+				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
 	}
 
 	
@@ -307,55 +292,3 @@ public class RetailerFEImpl implements RetailerInterface {
 	}
 }
 
-
-class ReadThread extends Thread{
-	RetailerFEImpl retailerFEImpl;
-	boolean keepReading;
-	public ReadThread(RetailerFEImpl retailerFEImpl){
-		this.retailerFEImpl = retailerFEImpl;
-		keepReading = true;
-	}
-
-	public void run(){
-		while(keepReading){
-			try {
-				Message msg = retailerFEImpl.networkIO.receiveMessage();
-				if(msg == null){
-					
-				}
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			System.out.println("read thread is running...");
-		}
-	}
-	
-	public void terminate(){
-		keepReading = false;
-	}
-}
-
-class WriteThread extends Thread{
-	RetailerFEImpl retailerFEImpl;
-	boolean keepWriting;
-	public WriteThread(RetailerFEImpl retailerFEImpl){
-		this.retailerFEImpl = retailerFEImpl;
-		keepWriting = true;
-	}
-
-	public void run(){
-		while(keepWriting){
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			System.out.println("write thread is running...");
-		}
-	}
-	
-	public void terminate(){
-		keepWriting = false;
-	}
-}
