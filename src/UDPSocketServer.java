@@ -1,9 +1,9 @@
 import java.net.SocketException;
 
-import tools.NetworkIO;
-import tools.RetailerFEGetCatelogMessage;
-import tools.Channel;
-import tools.RetailerFESignInMessage;
+import tools.channel.Channel;
+import tools.channel.NetworkIO;
+import tools.message.RetailerFEGetCatelogMessage;
+import tools.message.RetailerFESignInMessage;
 public class UDPSocketServer {
 	
 	public static void main(String[] args) {

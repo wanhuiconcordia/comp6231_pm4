@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 import javax.xml.ws.Endpoint;
 
-import sequencer.RetailerSequencer;
+import sequencer.retailerSequencer.RetailerSequencer;
 import tools.ConfigureManager;
 
 public class RetailerFE {

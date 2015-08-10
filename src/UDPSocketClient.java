@@ -2,12 +2,12 @@ import java.net.*;
 
 import tools.Item;
 import tools.ItemList;
-import tools.NetworkIO;
 import tools.Product;
-import tools.RetailerFEGetCatelogMessage;
-import tools.Channel;
-import tools.RetailerFESignInMessage;
-import tools.TestMessage;
+import tools.channel.Channel;
+import tools.channel.NetworkIO;
+import tools.message.RetailerFEGetCatelogMessage;
+import tools.message.RetailerFESignInMessage;
+import tools.message.TestMessage;
 public class UDPSocketClient {
     public static void main(String[] args) {
     	try {

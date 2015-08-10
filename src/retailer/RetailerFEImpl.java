@@ -12,8 +12,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import retailer.CustomerManager;
-import sequencer.RetailerSequencer;
-import tools.Channel;
+import sequencer.retailerSequencer.RetailerSequencer;
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -21,10 +20,11 @@ import tools.ItemList;
 import tools.ItemShippingStatus;
 import tools.ItemShippingStatusList;
 import tools.LoggerClient;
-import tools.Message;
-import tools.NetworkIO;
 import tools.SignUpResult;
 //import warehouse.WarehouseInterface;
+import tools.channel.Channel;
+import tools.channel.NetworkIO;
+import tools.message.Message;
 
 @WebService(endpointInterface = "retailer.RetailerInterface")
 public class RetailerFEImpl implements RetailerInterface {

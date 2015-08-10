@@ -1,4 +1,6 @@
-package tools;
+package tools.message;
+
+import tools.ItemList;
 
 public class TestMessage extends Message{
 	ItemList itemList;

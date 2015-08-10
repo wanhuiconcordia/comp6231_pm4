@@ -1,4 +1,5 @@
-package tools;
+package tools.message;
+
 
 public class AckMessage extends Message {
 

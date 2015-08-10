@@ -1,11 +1,23 @@
-package tools;
+package tools.channel;
 
+import java.net.SocketException;
 import java.util.HashMap;
 
-public class ChannelManager implements MessageProcesser{
-	HashMap<String, Channel> channelMap;
-	public ChannelManager() {
+import tools.ConfigureManager;
+import tools.message.Message;
+
+public class ChannelManager{
+	public HashMap<String, Channel> channelMap;
+	NetworkIO networkIO;
+	ReadThread readThread;
+	WriteThread writeThread;
+	public ChannelManager() throws SocketException, Exception {
 		channelMap = new HashMap<String, Channel>();
+		networkIO = new NetworkIO(ConfigureManager.getInstance().getInt("RetailerSequencerPort"));
+		readThread = new ReadThread(this, networkIO);
+		writeThread = new WriteThread(this, networkIO);
+		readThread.start();
+		writeThread.start();
 	}
 	
 	public void addChannel(Channel channel){
@@ -16,7 +28,7 @@ public class ChannelManager implements MessageProcesser{
 			System.out.println("Udp channal to " + channel.peerProcessName + ":" + channel.peerHost + ":" + channel.peerPort);
 		}
 	}
-	@Override
+	
 	public void processMessage(Message message) {
 		if(channelMap.containsKey(message.sender)){
 			channelMap.get(message.sender).processMessage(message);
@@ -24,5 +36,4 @@ public class ChannelManager implements MessageProcesser{
 			System.out.println("channelMap does not contian " + message.sender);
 		}
 	}
-
 }
