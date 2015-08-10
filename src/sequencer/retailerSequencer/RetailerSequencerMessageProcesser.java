@@ -8,9 +8,11 @@ import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.RetailerFESignInMessage;
 import tools.message.RetailerFESignUpMessage;
+import tools.message.RetailerFESubmitOrderMessage;
 import tools.message.RetailerSequencerGetCatelogMessage;
 import tools.message.RetailerSequencerSignInMessage;
 import tools.message.RetailerSequencerSignUpMessage;
+import tools.message.RetailerSequencerSubmitOrderMessage;
 
 public class RetailerSequencerMessageProcesser implements MessageProcesser {
 
@@ -118,9 +120,18 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 			}		
 			break;
 		case submitOrder:
-			//			thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-			//			thisChannel.hasCachedMsg = true;
-			dispatchMessage(msg);
+			sequencerID++;
+			for(Channel channel: channelManager.channelMap.values()){
+				if(channel.group == Group.RetailerReplica){
+					channel.cachedMsg = new RetailerSequencerSubmitOrderMessage(channel.localProcessName
+							, ++channel.localSeq
+							, channel.peerSeq
+							, ((RetailerFESubmitOrderMessage)msg).customerReferenceNumber
+							, ((RetailerFESubmitOrderMessage)msg).itemList
+							, sequencerID); 
+					channel.hasCachedMsg = true;		
+				}
+			}
 			break;
 		default:
 			System.out.println("Unrecognizable action");
