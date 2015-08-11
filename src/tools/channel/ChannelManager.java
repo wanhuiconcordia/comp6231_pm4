@@ -22,14 +22,14 @@ public class ChannelManager{
 	NetworkIO networkIO;
 	ReadThread readThread;
 	WriteThread writeThread;
-	public ChannelManager(LoggerClient loggerClient, MessageProcesser messageProcesser) throws SocketException, Exception {
+	public ChannelManager(int localPort, LoggerClient loggerClient, MessageProcesser messageProcesser) throws SocketException, Exception {
 		this.loggerClient = loggerClient;
 		this.messageProcesser = messageProcesser;
 		channelMap = new HashMap<String, Channel>();
 		outgoingPacketQueueLock = new Object();
 		outgoingPacketQueue = new LinkedList<Packet>();
 		sequencerID = 0;
-		networkIO = new NetworkIO(ConfigureManager.getInstance().getInt("RetailerSequencerPort"));
+		networkIO = new NetworkIO(localPort);
 		readThread = new ReadThread(this, networkIO);
 		writeThread = new WriteThread(this, networkIO);
 	}

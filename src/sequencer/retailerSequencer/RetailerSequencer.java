@@ -20,27 +20,18 @@ public class RetailerSequencer {
 		System.out.println(name + " udp channel:" + host + ":" + port);
 		loggerClient = new LoggerClient(name);
 		
-		ChannelManager channelManager = new ChannelManager(loggerClient, new RetailerSequencerMessageProcesser());
+		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerSequencerMessageProcesser());
 		
 		host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		channelManager.addChannel(new Channel(name, "RetailerFE", host, port, Group.RetailerFE));
 		
-		host = ConfigureManager.getInstance().getString("RetailerReplica1Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica1Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica1", host, port , Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica2Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica2Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica2", host, port, Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica3Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica3Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica3", host, port, Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica4Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica4Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica4", host, port, Group.RetailerReplica));
+		for(int i = 1; i <=4; i++){
+			host = ConfigureManager.getInstance().getString("RetailerReplica" + i + "Host");
+			port = ConfigureManager.getInstance().getInt("RetailerReplica" + i + "Port");
+			channelManager.addChannel(new Channel(name, "RetailerReplica" + i, host, port , Group.RetailerReplica));
+		}
+
 		channelManager.start();
 	}
 	
@@ -48,9 +39,9 @@ public class RetailerSequencer {
 	
 		try {
 			String localIp = InetAddress.getLocalHost().getHostAddress();
-			String sequencerHost = ConfigureManager.getInstance().getString("RetailerSequencerHost");
-			if(!localIp.equals(sequencerHost)){
-				System.out.println("Please run the RetailerSequencerHost on:" + sequencerHost + " or change the RetailerSequencerHost of configure file to:" + localIp);
+			String hostOfConfig = ConfigureManager.getInstance().getString("RetailerSequencerHost");
+			if(!localIp.equals(hostOfConfig)){
+				System.out.println("Please run the RetailerSequencer on:" + hostOfConfig + " or change the RetailerSequencerHost of configure file to:" + localIp);
 				return;
 			}
 			RetailerSequencer retailerSequencer = new RetailerSequencer();

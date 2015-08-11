@@ -21,10 +21,11 @@ public class WriteThread extends Thread {
 				}
 			}
 			try {
-				Thread.sleep(50);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			channelManager.loggerClient.write("write thread is running...");
 		}
 	}
 

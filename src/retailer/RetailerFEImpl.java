@@ -43,11 +43,11 @@ public class RetailerFEImpl implements RetailerInterface {
 		customerManager = new CustomerManager("customers.xml");
 		loggerClient = new LoggerClient(name);
 		//this.connectWarehouses();
-		ChannelManager channelManager = new ChannelManager(loggerClient, new RetailerFEMessageProcesser());
-		
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		System.out.println(name + " udp channel:" + host + ":" + port);
+		
+		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerFEMessageProcesser());
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");

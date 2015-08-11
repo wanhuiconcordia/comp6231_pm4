@@ -1,4 +1,4 @@
-package rm;
+package retailer;
 
 import tools.channel.ChannelManager;
 import tools.message.Message;
