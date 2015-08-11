@@ -6,6 +6,7 @@ import tools.channel.Group;
 import tools.message.AckMessage;
 import tools.message.Message;
 import tools.message.MessageProcesser;
+import tools.message.Packet;
 import tools.message.RetailerFESignInMessage;
 import tools.message.RetailerFESignUpMessage;
 import tools.message.RetailerFESubmitOrderMessage;
@@ -37,28 +38,21 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 					break;
 				case INIT:
 					thisChannel.localSeq = 0;
-					thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-					thisChannel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
+								, thisChannel.peerPort
+								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
+					}
 					break;
 				case getCatelog:
-					thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-					thisChannel.hasCachedMsg = true;
-
-					dispatchMessage(msg);
-					break;
 				case signIn:
-					thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-					thisChannel.hasCachedMsg = true;
-					dispatchMessage(msg);
-					break;
 				case signUp:
-					thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-					thisChannel.hasCachedMsg = true;
-					dispatchMessage(msg);
-					break;
 				case submitOrder:
-					thisChannel.cachedMsg = new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq);
-					thisChannel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
+								, thisChannel.peerPort
+								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
+					}
 					dispatchMessage(msg);
 					break;
 				default:
@@ -82,7 +76,12 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, ++channel.localSeq
 							, channel.peerSeq
 							, sequencerID); 
-					channel.hasCachedMsg = true;		
+					channel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
+								, channel.peerPort
+								, channel.cachedMsg));
+					}
 				}
 			}
 			break;
@@ -95,7 +94,12 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, channel.peerSeq 
 							, ((RetailerFESignInMessage)msg).customerReferenceNumber 
 							, ((RetailerFESignInMessage)msg).password, sequencerID);
-					channel.hasCachedMsg = true;		
+					channel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
+								, channel.peerPort
+								, channel.cachedMsg));
+					}
 				}
 			}			
 			break;
@@ -115,7 +119,12 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, ((RetailerFESignUpMessage)msg).zip
 							, ((RetailerFESignUpMessage)msg).country
 							, sequencerID);
-					channel.hasCachedMsg = true;		
+					channel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
+								, channel.peerPort
+								, channel.cachedMsg));
+					}
 				}
 			}		
 			break;
@@ -129,7 +138,12 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, ((RetailerFESubmitOrderMessage)msg).customerReferenceNumber
 							, ((RetailerFESubmitOrderMessage)msg).itemList
 							, sequencerID); 
-					channel.hasCachedMsg = true;		
+					channel.hasCachedMsg = true;
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
+								, channel.peerPort
+								, channel.cachedMsg));
+					}
 				}
 			}
 			break;

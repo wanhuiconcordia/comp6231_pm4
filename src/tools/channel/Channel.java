@@ -1,5 +1,8 @@
 package tools.channel;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
@@ -26,11 +29,8 @@ public class Channel {
 		this.messageProcesser = messageProcesser;
 		peerSeq = 1;
 		localSeq = 0;
-		hasCachedMsg = false;
-	}
-	
-	public void processMessage(Message message){
 		
+		hasCachedMsg = false;
 	}
 	
 	public boolean verifySequence(Message msg){

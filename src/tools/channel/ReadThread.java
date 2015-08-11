@@ -14,10 +14,13 @@ public class ReadThread extends Thread {
 
 	public void run(){
 		while(keepReading){
-
-			Message msg = networkIO.receiveMessage();
-			if(msg != null){
-				channelManager.processMessage(msg);
+			try{
+				Message msg = networkIO.receiveMessage();
+				if(msg != null){
+					channelManager.processMessage(msg);
+				}
+			}catch(java.net.SocketTimeoutException e){
+				channelManager.collectLostPacket();
 			}
 		}
 	}

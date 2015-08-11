@@ -1,5 +1,7 @@
 package tools.channel;
 
+import tools.message.Packet;
+
 public class WriteThread extends Thread {
 	ChannelManager channelManager;
 	NetworkIO networkIO;
@@ -12,9 +14,10 @@ public class WriteThread extends Thread {
 
 	public void run(){
 		while(keepWriting){
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.hasCachedMsg){
-					networkIO.sendMsg(channel.cachedMsg, channel.peerHost, channel.peerPort);
+			synchronized(channelManager.outgoingPacketQueueLock) {
+				while(!channelManager.outgoingPacketQueue.isEmpty()){
+					Packet packet = channelManager.outgoingPacketQueue.remove();
+					networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);				
 				}
 			}
 			try {

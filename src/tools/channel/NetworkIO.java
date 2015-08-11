@@ -8,6 +8,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import tools.message.Message;
@@ -23,35 +24,31 @@ public class NetworkIO {
 		datagramSocket.setSoTimeout(1000);
 	}
 	
-	public Message receiveMessage(){
+	public Message receiveMessage() throws SocketTimeoutException{
 		byte[] incomingData = new byte[1024];
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-		while(keepWorking){
-			try {
-				datagramSocket.receive(incomingPacket);
+		try {
+			datagramSocket.receive(incomingPacket);
 
-				byte[] data = incomingPacket.getData();
-				ByteArrayInputStream in = new ByteArrayInputStream(data);
-				ObjectInputStream is;
+			byte[] data = incomingPacket.getData();
+			ByteArrayInputStream in = new ByteArrayInputStream(data);
+			ObjectInputStream is;
 
-				is = new ObjectInputStream(in);
+			is = new ObjectInputStream(in);
 
-				Message msg;
+			Message msg;
 
-				msg = (Message) is.readObject();
-				
-				System.out.println("Receive msg:" + msg);
-				//packet.peerPort = incomingPacket.getPort();
-				return msg;
-			}catch(java.net.SocketTimeoutException e){
-				//System.out.println("time out...");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			msg = (Message) is.readObject();
+
+			System.out.println("Receive msg:" + msg);
+			//packet.peerPort = incomingPacket.getPort();
+			return msg;
+		}catch(java.net.SocketTimeoutException e){
+			throw new java.net.SocketTimeoutException();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 
 		return null;
