@@ -17,16 +17,8 @@ import tools.message.RetailerSequencerSubmitOrderMessage;
 
 public class RetailerSequencerMessageProcesser implements MessageProcesser {
 
-	public ChannelManager channelManager;
-	public 	int sequencerID;
-
-	public RetailerSequencerMessageProcesser(ChannelManager channelManager){
-		this.channelManager = channelManager;
-		sequencerID = 0;
-	}
-
 	@Override
-	public void processMessage(Message msg) {
+	public void processMessage(ChannelManager channelManager, Message msg) {
 		if(channelManager.channelMap.containsKey(msg.sender)){
 			Channel thisChannel = channelManager.channelMap.get(msg.sender);
 
@@ -53,7 +45,7 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 								, thisChannel.peerPort
 								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
 					}
-					dispatchMessage(msg);
+					dispatchMessage(channelManager, msg);
 					break;
 				default:
 					System.out.println("Unrecognizable action");
@@ -66,16 +58,16 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 	}
 
 	@Override
-	public void dispatchMessage(Message msg) {
+	public void dispatchMessage(ChannelManager channelManager, Message msg) {
 		switch(msg.action){
 		case getCatelog:
-			sequencerID++;
+			channelManager.sequencerID++;
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RetailerReplica){
 					channel.cachedMsg = new RetailerSequencerGetCatelogMessage(channel.localProcessName
 							, ++channel.localSeq
 							, channel.peerSeq
-							, sequencerID); 
+							, channelManager.sequencerID); 
 					channel.hasCachedMsg = true;
 					synchronized(channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
@@ -86,14 +78,14 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 			}
 			break;
 		case signIn:
-			sequencerID++;
+			channelManager.sequencerID++;
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RetailerReplica){
 					channel.cachedMsg = new RetailerSequencerSignInMessage(channel.localProcessName
 							, ++channel.localSeq
 							, channel.peerSeq 
 							, ((RetailerFESignInMessage)msg).customerReferenceNumber 
-							, ((RetailerFESignInMessage)msg).password, sequencerID);
+							, ((RetailerFESignInMessage)msg).password, channelManager.sequencerID);
 					channel.hasCachedMsg = true;
 					synchronized(channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
@@ -104,7 +96,7 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 			}			
 			break;
 		case signUp:
-			sequencerID++;
+			channelManager.sequencerID++;
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RetailerReplica){
 					channel.cachedMsg = new RetailerSequencerSignUpMessage(channel.localProcessName
@@ -118,7 +110,7 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, ((RetailerFESignUpMessage)msg).state
 							, ((RetailerFESignUpMessage)msg).zip
 							, ((RetailerFESignUpMessage)msg).country
-							, sequencerID);
+							, channelManager.sequencerID);
 					channel.hasCachedMsg = true;
 					synchronized(channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
@@ -129,7 +121,7 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 			}		
 			break;
 		case submitOrder:
-			sequencerID++;
+			channelManager.sequencerID++;
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RetailerReplica){
 					channel.cachedMsg = new RetailerSequencerSubmitOrderMessage(channel.localProcessName
@@ -137,7 +129,7 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 							, channel.peerSeq
 							, ((RetailerFESubmitOrderMessage)msg).customerReferenceNumber
 							, ((RetailerFESubmitOrderMessage)msg).itemList
-							, sequencerID); 
+							, channelManager.sequencerID); 
 					channel.hasCachedMsg = true;
 					synchronized(channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost

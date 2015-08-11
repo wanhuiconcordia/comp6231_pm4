@@ -27,7 +27,6 @@ import tools.channel.Group;
 
 @WebService(endpointInterface = "retailer.RetailerInterface")
 public class RetailerFEImpl implements RetailerInterface {
-	
 	public CustomerManager customerManager;
 	public LoggerClient loggerClient;
 	//private ArrayList<WarehouseInterface> warehouseList;
@@ -44,7 +43,7 @@ public class RetailerFEImpl implements RetailerInterface {
 		customerManager = new CustomerManager("customers.xml");
 		loggerClient = new LoggerClient(name);
 		//this.connectWarehouses();
-		ChannelManager channelManager = new ChannelManager();
+		ChannelManager channelManager = new ChannelManager(loggerClient, new RetailerFEMessageProcesser());
 		
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
@@ -52,49 +51,41 @@ public class RetailerFEImpl implements RetailerInterface {
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
-		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port
-				, Group.RetailerSequencer, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port, Group.RetailerSequencer));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica1Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica1Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica1", host, port
-				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerReplica1", host, port, Group.RetailerReplica));
 		
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica2Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica2Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica2", host, port
-				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerReplica2", host, port, Group.RetailerReplica));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica3Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica3Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica3", host, port
-				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerReplica3", host, port, Group.RetailerReplica));
 		
 		host = ConfigureManager.getInstance().getString("RetailerReplica4Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica4Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica4", host, port
-				, Group.RetailerReplica, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerReplica4", host, port, Group.RetailerReplica));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM1Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM1Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM1", host, port
-				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerRM1", host, port, Group.RetailerRM));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM2Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM2Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM2", host, port
-				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerRM2", host, port, Group.RetailerRM));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM3Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM3Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM3", host, port
-				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerRM3", host, port, Group.RetailerRM));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM4Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM4Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM4", host, port
-				, Group.RetailerRM, new RetailerFEMessageProcesser(channelManager)));
+		channelManager.addChannel(new Channel(name, "RetailerRM4", host, port, Group.RetailerRM));
+		channelManager.start();
 	}
 
 	

@@ -8,7 +8,7 @@ import tools.message.RetailerFESignInMessage;
 public class UDPSocketServer {
 
 	public static void main(String[] args) {
-		Channel channel = new Channel("UDPSocketClient", "UDPSocketServer", "localhost", 6789, Group.RetailerFE, null);
+		Channel channel = new Channel("UDPSocketClient", "UDPSocketServer", "localhost", 6789, Group.RetailerFE);
 		NetworkIO networkIO;
 		try {
 			networkIO = new NetworkIO(9876);

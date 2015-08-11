@@ -1,10 +1,10 @@
-package retailer;
+package rm;
 
 import tools.channel.ChannelManager;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 
-public class RetailerFEMessageProcesser implements MessageProcesser {
+public class RetailerRMMessageProcesser implements MessageProcesser{
 
 	@Override
 	public void dispatchMessage(ChannelManager channelManager, Message msg) {

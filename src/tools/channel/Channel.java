@@ -1,8 +1,5 @@
 package tools.channel;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
@@ -20,13 +17,12 @@ public class Channel {
 	public boolean hasCachedMsg;
 	public Message cachedMsg;
 	
-	public Channel(String localProcessName, String peerProcessName, String peerHost, int peerPort, Group group, MessageProcesser messageProcesser){
+	public Channel(String localProcessName, String peerProcessName, String peerHost, int peerPort, Group group){
 		this.localProcessName = localProcessName;
 		this.peerProcessName = peerProcessName;
 		this.peerHost = peerHost;
 		this.peerPort = peerPort;
 		this.group = group;
-		this.messageProcesser = messageProcesser;
 		peerSeq = 1;
 		localSeq = 0;
 		
