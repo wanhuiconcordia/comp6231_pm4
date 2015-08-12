@@ -44,17 +44,13 @@ public class ChannelManager{
 	}
 	
 	public void processMessage(Message message) {
-		if(channelMap.containsKey(message.sender)){
-			messageProcesser.processMessage(this, message);
-		}else{
-			System.out.println("channelMap does not contian " + message.sender);
-		}
+		messageProcesser.processMessage(this, message);
 	}
 	
 	public void collectLostPacket(){
 		for(Channel channel: channelMap.values()){
-			if(channel.hasCachedMsg){
-				outgoingPacketQueue.add(new Packet(channel.peerHost, channel.peerPort, channel.cachedMsg));
+			if(channel.isWaitingForRespose){
+				outgoingPacketQueue.add(channel.backupPacket);
 			}
 		}
 	}

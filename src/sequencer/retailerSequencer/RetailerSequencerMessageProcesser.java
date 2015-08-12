@@ -4,6 +4,7 @@ import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
 import tools.message.AckMessage;
+import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
@@ -20,128 +21,117 @@ public class RetailerSequencerMessageProcesser implements MessageProcesser {
 	@Override
 	public void processMessage(ChannelManager channelManager, Message msg) {
 		if(channelManager.channelMap.containsKey(msg.sender)){
-			Channel thisChannel = channelManager.channelMap.get(msg.sender);
-
-			if(thisChannel.verifySequence(msg)){
-				thisChannel.peerSeq = msg.senderSeq;
-				switch(msg.action){
-				case ACK:
-					thisChannel.hasCachedMsg = false;
-					break;
-				case INIT:
-					thisChannel.localSeq = 0;
+			Channel channel = channelManager.channelMap.get(msg.sender);
+			if(msg.senderSeq < channel.peerSeq){
+				if(msg.action == Action.INIT){
+					channel.localSeq = 0;
+					channel.backupPacket = new Packet(channel.peerHost
+							, channel.peerPort
+							, new AckMessage(channel.localProcessName
+									, ++channel.localSeq
+									, msg.senderSeq));
 					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
-								, thisChannel.peerPort
-								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
+						channelManager.outgoingPacketQueue.add(channel.backupPacket);
 					}
-					break;
-				case getCatelog:
-				case signIn:
-				case signUp:
-				case submitOrder:
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
-								, thisChannel.peerPort
-								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
-					}
-					dispatchMessage(channelManager, msg);
-					break;
-				default:
-					System.out.println("Unrecognizable action");
-					break;
+				}else{
+					System.out.println("Delayed msg, drop...");
 				}
+			}else if(msg.senderSeq == channel.peerSeq){
+				System.out.println("Just received msg. Respond with backupPacket.");
+				synchronized(channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
+				
+			}else if(msg.senderSeq == channel.peerSeq + 1){
+				System.out.println("New good seq. Response and backup the packet");
+				if(msg.action == Action.ACK){
+					channel.isWaitingForRespose = false;
+				}else{
+					channel.backupPacket = new Packet(channel.peerHost
+							, channel.peerPort
+							, new AckMessage(channel.localProcessName
+									, ++channel.localSeq
+									, msg.senderSeq));
+					synchronized(channelManager.outgoingPacketQueueLock) {
+						channelManager.outgoingPacketQueue.add(channel.backupPacket);
+					}
+					
+					switch(msg.action){
+					case getCatelog:
+					case signIn:
+					case signUp:
+					case submitOrder:
+						channelManager.sequencerID++;
+						for(Channel castChannel: channelManager.channelMap.values()){
+							if(castChannel.group == Group.RetailerReplica){
+								castChannel.cachedMsg = generateRetailerSequencerMessage(castChannel.localProcessName
+										, ++castChannel.localSeq
+										, castChannel.peerSeq
+										, channelManager.sequencerID
+										, msg); 
+								castChannel.isWaitingForRespose = true;
+								synchronized(channelManager.outgoingPacketQueueLock) {
+									channelManager.outgoingPacketQueue.add(castChannel.backupPacket);
+								}
+							}
+						}
+						break;
+					default:
+						System.out.println("Unrecognizable action");
+						break;
+					}
+				}
+				
+			}else{
+				System.out.println("Messed seq.");
 			}
 		}else{
 			System.out.println("channelMap does not contian " + msg.sender);
+			channelManager.loggerClient.write("channelMap does not contian " + msg.sender);
 		}
 	}
 
-	@Override
-	public void dispatchMessage(ChannelManager channelManager, Message msg) {
-		switch(msg.action){
+	
+	private Message generateRetailerSequencerMessage(String localProcessName
+			, int localSeq
+			, int peerSeq
+			, int sequencerID
+			, Message receivedMsg){
+		switch(receivedMsg.action){
 		case getCatelog:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.RetailerReplica){
-					channel.cachedMsg = new RetailerSequencerGetCatelogMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, channelManager.sequencerID); 
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}
-			break;
+					return new RetailerSequencerGetCatelogMessage(localProcessName
+							, localSeq
+							, peerSeq
+							, sequencerID); 
 		case signIn:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.RetailerReplica){
-					channel.cachedMsg = new RetailerSequencerSignInMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq 
-							, ((RetailerFESignInMessage)msg).customerReferenceNumber 
-							, ((RetailerFESignInMessage)msg).password, channelManager.sequencerID);
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}			
-			break;
+			return new RetailerSequencerSignInMessage(localProcessName
+							, localSeq
+							, peerSeq 
+							, ((RetailerFESignInMessage)receivedMsg).customerReferenceNumber 
+							, ((RetailerFESignInMessage)receivedMsg).password
+							, sequencerID);
 		case signUp:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.RetailerReplica){
-					channel.cachedMsg = new RetailerSequencerSignUpMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, ((RetailerFESignUpMessage)msg).name
-							, ((RetailerFESignUpMessage)msg).password
-							, ((RetailerFESignUpMessage)msg).street1
-							, ((RetailerFESignUpMessage)msg).street2
-							, ((RetailerFESignUpMessage)msg).city
-							, ((RetailerFESignUpMessage)msg).state
-							, ((RetailerFESignUpMessage)msg).zip
-							, ((RetailerFESignUpMessage)msg).country
-							, channelManager.sequencerID);
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}		
-			break;
+			return new RetailerSequencerSignUpMessage(localProcessName
+					, localSeq
+					, peerSeq
+					, ((RetailerFESignUpMessage)receivedMsg).name
+					, ((RetailerFESignUpMessage)receivedMsg).password
+					, ((RetailerFESignUpMessage)receivedMsg).street1
+					, ((RetailerFESignUpMessage)receivedMsg).street2
+					, ((RetailerFESignUpMessage)receivedMsg).city
+					, ((RetailerFESignUpMessage)receivedMsg).state
+					, ((RetailerFESignUpMessage)receivedMsg).zip
+					, ((RetailerFESignUpMessage)receivedMsg).country
+					, sequencerID);
+	
 		case submitOrder:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.RetailerReplica){
-					channel.cachedMsg = new RetailerSequencerSubmitOrderMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, ((RetailerFESubmitOrderMessage)msg).customerReferenceNumber
-							, ((RetailerFESubmitOrderMessage)msg).itemList
-							, channelManager.sequencerID); 
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}
-			break;
-		default:
-			System.out.println("Unrecognizable action");
-			break;
+			return new RetailerSequencerSubmitOrderMessage(localProcessName
+							, localSeq
+							, peerSeq
+							, ((RetailerFESubmitOrderMessage)receivedMsg).customerReferenceNumber
+							, ((RetailerFESubmitOrderMessage)receivedMsg).itemList
+							, sequencerID);
 		}
+		return null;
 	}
 }
