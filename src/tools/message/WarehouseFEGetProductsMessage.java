@@ -1,6 +1,7 @@
 package tools.message;
 
 public class WarehouseFEGetProductsMessage extends Message{
+	
 	public String productID;
 	public String manufacturerName;
 	
