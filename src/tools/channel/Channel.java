@@ -23,7 +23,7 @@ public class Channel {
 		this.peerHost = peerHost;
 		this.peerPort = peerPort;
 		this.group = group;
-		peerSeq = 1;
+		peerSeq = 0;
 		localSeq = 0;
 		
 		hasCachedMsg = false;
@@ -32,7 +32,7 @@ public class Channel {
 	public boolean verifySequence(Message msg){
 		if(msg.receiverSeq == localSeq 
 				&& msg.senderSeq == peerSeq + 1
-				|| msg.action == Action.ACK){
+				|| msg.action == Action.INIT){
 			return true;
 		}
 		

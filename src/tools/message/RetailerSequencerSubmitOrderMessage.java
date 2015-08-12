@@ -6,6 +6,7 @@ public class RetailerSequencerSubmitOrderMessage extends
 		RetailerFESubmitOrderMessage {
 
 	int sequencerID;
+	ItemList itemList;
 	public RetailerSequencerSubmitOrderMessage(String sender
 			, int senderSeq
 			, int receiverSeq
@@ -14,6 +15,7 @@ public class RetailerSequencerSubmitOrderMessage extends
 			, int sequencerID) {
 		super(sender, senderSeq, receiverSeq, customerReferenceNumber, itemList);
 		this.sequencerID = sequencerID;
+		this.itemList = itemList;
 	}
 
 }
