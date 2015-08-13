@@ -3,6 +3,7 @@ package tools.channel;
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
+import tools.message.Packet;
 import tools.channel.Group;
 
 public class Channel {
@@ -14,7 +15,8 @@ public class Channel {
 	public MessageProcesser messageProcesser; 
 	public int peerSeq;
 	public int localSeq;
-	public boolean hasCachedMsg;
+	public boolean isWaitingForRespose;
+	public Packet backupPacket;
 	public Message cachedMsg;
 	
 	public Channel(String localProcessName, String peerProcessName, String peerHost, int peerPort, Group group){
@@ -26,12 +28,11 @@ public class Channel {
 		peerSeq = 0;
 		localSeq = 0;
 		
-		hasCachedMsg = false;
+		isWaitingForRespose = false;
 	}
 	
 	public boolean verifySequence(Message msg){
-		if(msg.receiverSeq == localSeq 
-				&& msg.senderSeq == peerSeq + 1
+		if(msg.senderSeq == peerSeq + 1		//This is the expecting seq
 				|| msg.action == Action.INIT){
 			return true;
 		}
