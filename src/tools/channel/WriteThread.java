@@ -14,11 +14,12 @@ public class WriteThread extends Thread {
 
 	public void run(){
 		while(keepWriting){
-			synchronized(channelManager.outgoingPacketQueueLock) {
-				while(!channelManager.outgoingPacketQueue.isEmpty()){
-					Packet packet = channelManager.outgoingPacketQueue.remove();
-					networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);				
+			while(!channelManager.outgoingPacketQueue.isEmpty()){
+				Packet packet;
+				synchronized(channelManager.outgoingPacketQueueLock) {
+					packet = channelManager.outgoingPacketQueue.remove();
 				}
+				networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);				
 			}
 			try {
 				Thread.sleep(500);

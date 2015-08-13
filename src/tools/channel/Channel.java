@@ -16,8 +16,9 @@ public class Channel {
 	public int peerSeq;
 	public int localSeq;
 	public boolean isWaitingForRespose;
+	public int timeoutTimes;
 	public Packet backupPacket;
-	public Message cachedMsg;
+	public Message receivedMessage;
 	
 	public Channel(String localProcessName, String peerProcessName, String peerHost, int peerPort, Group group){
 		this.localProcessName = localProcessName;
@@ -29,6 +30,7 @@ public class Channel {
 		localSeq = 0;
 		
 		isWaitingForRespose = false;
+		timeoutTimes = 0;
 	}
 	
 	public boolean verifySequence(Message msg){

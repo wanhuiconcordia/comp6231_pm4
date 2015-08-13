@@ -9,7 +9,7 @@ import tools.message.TestMessage;
 public class UDPSocketClient {
     public static void main(String[] args) throws SocketTimeoutException {
     	try {
-    		Channel channel = new Channel("UDPSocketServer", "UDPSocketClient", "localhost", 9876, Group.RetailerFE);
+    		Channel channel = new Channel("UDPSocketServer", "UDPSocketClient", "localhost", 9876, Group.FE);
 			NetworkIO networkIO = new NetworkIO(6789);
 
 			ItemList itemList = new ItemList();

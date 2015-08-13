@@ -6,8 +6,9 @@ public class RetailerSequencerGetCatelogMessage extends
 	public RetailerSequencerGetCatelogMessage(String sender
 			, int senderSeq
 			, int receiverSeq
+			, int customerReferenceNumber
 			, int sequencerID) {
-		super(sender, senderSeq, receiverSeq);
+		super(sender, senderSeq, receiverSeq, customerReferenceNumber);
 		this.sequencerID = sequencerID; 
 	}
 	

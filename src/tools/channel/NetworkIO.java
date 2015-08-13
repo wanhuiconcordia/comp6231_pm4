@@ -25,7 +25,7 @@ public class NetworkIO {
 	}
 	
 	public Message receiveMessage() throws SocketTimeoutException{
-		byte[] incomingData = new byte[1024];
+		byte[] incomingData = new byte[1024 * 8];
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 		try {
 			datagramSocket.receive(incomingPacket);

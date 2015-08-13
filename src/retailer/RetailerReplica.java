@@ -33,17 +33,17 @@ public class RetailerReplica {
 			if(i != index){
 				host = ConfigureManager.getInstance().getString(name + i + "Host");
 				port = ConfigureManager.getInstance().getInt(name + i + "Port");
-				channelManager.addChannel(new Channel(name + index, name + i, host, port, Group.RetailerReplica));
+				channelManager.addChannel(new Channel(name + index, name + i, host, port, Group.REPLICA));
 			}
 		}
 
 		host = ConfigureManager.getInstance().getString("RetailerRM" + index + "Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM" + index + "Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM" + index, host, port , Group.RetailerRM));
+		channelManager.addChannel(new Channel(name, "RetailerRM" + index, host, port , Group.RM));
 
 		host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		port = ConfigureManager.getInstance().getInt("RetailerFEPort");
-		channelManager.addChannel(new Channel(name, "RetailerFE", host, port, Group.RetailerFE));
+		channelManager.addChannel(new Channel(name, "RetailerFE", host, port, Group.FE));
 
 		channelManager.start();
 	}

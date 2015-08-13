@@ -47,12 +47,8 @@ public class ChannelManager{
 		messageProcesser.processMessage(this, message);
 	}
 	
-	public void collectLostPacket(){
-		for(Channel channel: channelMap.values()){
-			if(channel.isWaitingForRespose){
-				outgoingPacketQueue.add(channel.backupPacket);
-			}
-		}
+	public void processTimeout(){
+		messageProcesser.processTimeout(this);
 	}
 	
 	public void start(){

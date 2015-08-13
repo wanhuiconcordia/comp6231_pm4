@@ -1,17 +1,11 @@
 package retailer;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
-import java.util.Scanner;
 
 import javax.jws.WebService;
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
 
-import retailer.CustomerManager;
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -24,25 +18,26 @@ import tools.SignUpResult;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.message.Message;
+import tools.message.Packet;
+import tools.message.RetailerFEGetCatelogMessage;
+import tools.message.RetailerFESignInMessage;
+import tools.message.RetailerFESignUpMessage;
+import tools.message.RetailerFESubmitOrderMessage;
+import tools.message.RetailerReplicaSignUpReultMessage;
 
 @WebService(endpointInterface = "retailer.RetailerInterface")
 public class RetailerFEImpl implements RetailerInterface {
-	public CustomerManager customerManager;
 	public LoggerClient loggerClient;
-	//private ArrayList<WarehouseInterface> warehouseList;
 	public String name;
 	ChannelManager channelManager; 	
 	/**
 	 * Constructor
 	 * @param name
 	 */
-	public RetailerFEImpl(String name) throws Exception{
+	public RetailerFEImpl(String name, LoggerClient loggerClient) throws Exception{
 		this.name = name;
-//		warehouseList = new ArrayList<WarehouseInterface>();
-		//this.loggerClient = new LoggerClient();
-		customerManager = new CustomerManager("customers.xml");
-		loggerClient = new LoggerClient(name);
-		//this.connectWarehouses();
+		this.loggerClient = loggerClient;
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		System.out.println(name + " udp channel:" + host + ":" + port);
@@ -51,113 +46,42 @@ public class RetailerFEImpl implements RetailerInterface {
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
-		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port, Group.RetailerSequencer));
+		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port, Group.SEQUENCER));
 		
-		host = ConfigureManager.getInstance().getString("RetailerReplica1Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica1Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica1", host, port, Group.RetailerReplica));
-		
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica2Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica2Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica2", host, port, Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica3Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica3Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica3", host, port, Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerReplica4Host");
-		port = ConfigureManager.getInstance().getInt("RetailerReplica4Port");
-		channelManager.addChannel(new Channel(name, "RetailerReplica4", host, port, Group.RetailerReplica));
-		
-		host = ConfigureManager.getInstance().getString("RetailerRM1Host");
-		port = ConfigureManager.getInstance().getInt("RetailerRM1Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM1", host, port, Group.RetailerRM));
-		
-		host = ConfigureManager.getInstance().getString("RetailerRM2Host");
-		port = ConfigureManager.getInstance().getInt("RetailerRM2Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM2", host, port, Group.RetailerRM));
-		
-		host = ConfigureManager.getInstance().getString("RetailerRM3Host");
-		port = ConfigureManager.getInstance().getInt("RetailerRM3Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM3", host, port, Group.RetailerRM));
-		
-		host = ConfigureManager.getInstance().getString("RetailerRM4Host");
-		port = ConfigureManager.getInstance().getInt("RetailerRM4Port");
-		channelManager.addChannel(new Channel(name, "RetailerRM4", host, port, Group.RetailerRM));
+		for(int i = 1; i <= 4; i++){
+			host = ConfigureManager.getInstance().getString("RetailerReplica" + i + "Host");
+			port = ConfigureManager.getInstance().getInt("RetailerReplica" + i + "Port");
+			channelManager.addChannel(new Channel(name, "RetailerReplica" + i, host, port, Group.REPLICA));
+			
+			host = ConfigureManager.getInstance().getString("RetailerRM" + i + "Host");
+			port = ConfigureManager.getInstance().getInt("RetailerRM" + i + "Port");
+			channelManager.addChannel(new Channel(name, "RetailerRM1", host, port, Group.RM));
+		}
 		channelManager.start();
 	}
-
-	
-	/**
-	 * Provide interface for user to input the warehouses' ports for connecting
-	 */
-//	public void connectWarehouses(){
-//		Scanner in = new Scanner(System.in);
-//		while(true){
-//			System.out.print("Please input the port number of the warehouse service to establish connection (q to finish):");
-//			
-//			String port = in.nextLine();
-//			if(port.equals("q")){
-//				break;
-//			}else{
-//				String urlStr = "http://localhost:" + port + "/ws/warehouse?wsdl";
-//				try {
-//					URL url = new URL(urlStr);
-//					QName qname = new QName("http://warehouse/", "WarehouseImplService");
-//					WarehouseInterface warehouse;
-//					Service service = Service.create(url, qname);
-//					warehouse = service.getPort(WarehouseInterface.class);
-//					System.out.println("Obtained a handle on server object: " + warehouse.getName());
-//					warehouseList.add(warehouse);
-//				}catch (MalformedURLException e1) {
-//					e1.printStackTrace();
-//				}catch (Exception e) {
-//					//System.out.println("Failed to access the WSDL at:" + urlStr);
-//					e.printStackTrace();
-//					return;
-//				}
-//			}
-//		}	
-//		in.close();
-//	}
 
 	/* (non-Javadoc)
 	 * @see retailer.RetailerInterface#getCatalog(int)
 	 */
 	@Override
-	public ItemList getCatalog(int customerReferenceNumber) {
+	public synchronized ItemList getCatalog(int customerReferenceNumber) {
 		System.out.println("getCatalog is called...");
-//		ItemList itemList = new ItemList();
-//		HashMap<String, Item> itemsMap = new HashMap<String, Item>();
-//
-//		for(int i = 0; i < warehouseList.size(); i++){
-//			ItemList itemListFromWarehouse = warehouseList.get(i).getProductsByID("");
-//			for(Item item: itemListFromWarehouse.innerItemList){
-//				String key = item.productID;
-//				Item itemInMap = itemsMap.get(key); 
-//				if(itemInMap == null){
-//					itemsMap.put(key, item.clone());
-//				}else{
-//					itemInMap.quantity= itemInMap.quantity + item.quantity;
-//				}
-//			}
-//		}
-//
-//		for(Item item: itemsMap.values()){
-//			itemList.innerItemList.add(item);
-//		}
-//		System.out.println(itemList.toString());
-//		return itemList;
+
+		Channel channel = channelManager.channelMap.get("RetailerSequencer");
+		channel.backupPacket = new Packet(channel.peerHost
+				, channel.peerPort
+				, new RetailerFEGetCatelogMessage(channel.localProcessName
+						, channel.localSeq
+						, channel.peerPort
+						, customerReferenceNumber));
+		channel.isWaitingForRespose = true;
+		synchronized(channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
 		
+		//TODO wait for replica message coming
 		
-		
-		ItemList itemList = new ItemList();
-		itemList.addItem(new Item("Sony", "DVD", (float)120, 5));
-		itemList.addItem(new Item("Sony", "TV", (float)220, 15));
-		itemList.addItem(new Item("Samsung", "Cell phone", (float)320, 25));
-		itemList.addItem(new Item("Apple", "Cell phone", (float)420, 20));
-		return itemList;
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -167,98 +91,20 @@ public class RetailerFEImpl implements RetailerInterface {
 	public synchronized ItemShippingStatusList submitOrder(int customerReferenceNumber,
 			ItemList itemOrderList) {
 		System.out.println("ItemShippingStatusList is called...");
-//		ItemShippingStatusList itemShippingStatusList= new ItemShippingStatusList();
-//		Customer currentCustomer = customerManager.getCustomerByReferenceNumber(customerReferenceNumber);
-//		if(currentCustomer == null){
-//			loggerClient.write(name + ": customer reference number can not be found in customer database.");
-//			return itemShippingStatusList;
-//		}
-//		
-//		if(itemOrderList == null){
-//			loggerClient.write(name + ": null order list.");
-//			return itemShippingStatusList;
-//		}else if(itemOrderList.innerItemList.isEmpty()){
-//			loggerClient.write(name + ": empty order list.");
-//			return itemShippingStatusList;
-//		}else{
-//			HashMap<String, ItemShippingStatus> receivedItemShippingStatusMap = new HashMap<String, ItemShippingStatus>();
-//			HashMap<String, Item> orderMap = new HashMap<String, Item>();
-//			for(Item item: itemOrderList.innerItemList){
-//				Item itemImpl = new Item(item);
-//				System.out.println("item orderd"+itemImpl.toString());
-//				if(itemImpl.quantity > 0){
-//					Item itemInOrderMap = orderMap.get(itemImpl.productID);
-//					if(itemInOrderMap == null){
-//						orderMap.put(item.productID, new Item(itemImpl));
-//					}else{
-//						itemInOrderMap.quantity += itemImpl.quantity;
-//					}
-//				}
-//			}
-//			System.out.println("order map:" +orderMap);
-//			
-//			for(WarehouseInterface thisWarehouse: warehouseList){
-//				int itemRequestFromWarehouseCount = orderMap.size();
-//				
-//				if(itemRequestFromWarehouseCount > 0)
-//				{
-//					ItemList itemRequestFromWarehouseList = new ItemList(itemRequestFromWarehouseCount);
-//					System.out.println("itemRequestFromWarehouseList size : "+ itemRequestFromWarehouseList.innerItemList.size());
-//					int i = 0;
-//					for(Item orderItem: orderMap.values()){
-//						System.out.println("orderItem: "+ orderItem);
-//						itemRequestFromWarehouseList.innerItemList.add(i, orderItem);
-//						i++;
-//					}
-//					System.out.println("itemRequestFromWarehouseList size after adding: "+ itemRequestFromWarehouseList.innerItemList.size());
-//					ItemList itemsGotFromCurrentWarehouse=null;
-//					if(thisWarehouse.registerRetailer(name)){
-//					
-//						itemsGotFromCurrentWarehouse = thisWarehouse.shippingGoods(itemRequestFromWarehouseList, name);
-//					}
-//					if(itemsGotFromCurrentWarehouse == null){
-//						System.out.println("warehouse return null");
-//					}else if(itemsGotFromCurrentWarehouse.innerItemList.isEmpty()){
-//						System.out.println("warehouse return empty arrry");
-//					}else{
-//						String log = new String();
-//						for(Item item: itemsGotFromCurrentWarehouse.innerItemList){
-//							Item itemInReceivedItemShippingStatusMap = receivedItemShippingStatusMap.get(item.productID);
-//							if(itemInReceivedItemShippingStatusMap == null){
-//								receivedItemShippingStatusMap.put(item.productID, new ItemShippingStatus(item, true));
-//							}else{
-//								itemInReceivedItemShippingStatusMap.quantity += item.quantity;
-//							}
-//
-//							Item itemInOrderMap = orderMap.get(item.productID);
-//							if(itemInOrderMap == null){
-//								System.out.println("Warehouse side error. never request this item from warehouse, but the warehouse return this item.");
-//							}else{
-//								itemInOrderMap.quantity -= item.quantity;
-//								if(itemInOrderMap.quantity == 0){
-//									orderMap.remove(item.productID);
-//								}
-//							}
-//						}
-//					}
-//				}else{
-//					break;
-//				}
-//			}
-//			
-//			ArrayList<ItemShippingStatus> tmpItemShippingStatusList = new ArrayList<ItemShippingStatus>();
-//			
-//			for(ItemShippingStatus itemInReceivedItemShippingStatusMap: receivedItemShippingStatusMap.values()){
-//				tmpItemShippingStatusList.add(itemInReceivedItemShippingStatusMap);
-//			}
-//			
-//			for(Item itemInOrderMap: orderMap.values()){
-//				tmpItemShippingStatusList.add(new ItemShippingStatus(itemInOrderMap, false));
-//			}
-//			
-//			itemShippingStatusList.setItems(tmpItemShippingStatusList);
-//			return itemShippingStatusList;
-//		}
+		
+		Channel channel = channelManager.channelMap.get("RetailerSequencer");
+		channel.backupPacket = new Packet(channel.peerHost
+				, channel.peerPort
+				, new RetailerFESubmitOrderMessage(channel.localProcessName
+						, channel.localSeq
+						, channel.peerPort
+						, customerReferenceNumber
+						, itemOrderList));
+		channel.isWaitingForRespose = true;
+		synchronized(channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
+		//TODO wait for replica message coming
 		return null;
 	}
 
@@ -270,7 +116,40 @@ public class RetailerFEImpl implements RetailerInterface {
 			String street2, String city, String state, String zip,
 			String country) {
 		System.out.println("signUp is called...");
-		return customerManager.register(name, password, street1, street2, city, state, zip, country);
+
+		for(Channel replicaChannel: channelManager.channelMap.values()){
+			replicaChannel.receivedMessage = null;
+		}
+		
+		Channel channel = channelManager.channelMap.get("RetailerSequencer");
+		channel.backupPacket = new Packet(channel.peerHost
+				, channel.peerPort
+				, new RetailerFESignUpMessage(channel.localProcessName
+						, channel.localSeq
+						, channel.peerPort
+						, name
+						, password
+						, street1
+						, street2
+						, city
+						, state
+						, zip
+						, country));
+		channel.isWaitingForRespose = true;
+		synchronized(channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
+		
+		ReplicaResponse majorResponse = waitForReplicResponse();
+		
+		if(majorResponse == null){
+			//BIG ERROR, WRITE TO LOGSERVER
+			return null;
+		}else{
+			//TODO notifyRetailerRM();
+			return ((RetailerReplicaSignUpReultMessage)(majorResponse.majorMsg)).signUpResult;
+		}
+
 	}
 
 	/* (non-Javadoc)
@@ -279,7 +158,61 @@ public class RetailerFEImpl implements RetailerInterface {
 	@Override
 	public Customer signIn(int customerReferenceNumber, String password) {
 		System.out.println("signIn is called...");
-		return customerManager.find(customerReferenceNumber, password);
+		Channel channel = channelManager.channelMap.get("RetailerSequencer");
+		channel.backupPacket = new Packet(channel.peerHost
+				, channel.peerPort
+				, new RetailerFESignInMessage(channel.localProcessName
+						, channel.localSeq
+						, channel.peerPort
+						, customerReferenceNumber
+						, password));
+		channel.isWaitingForRespose = true;
+		synchronized(channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
+		
+		//TODO wait for replica message coming
+		return null;
+	}
+	
+
+	ReplicaResponse waitForReplicResponse(){
+		HashMap<String, Channel> notAnsweredReplicaChannelMap = new HashMap<String, Channel>();
+	
+		for(Channel replicaChannel: notAnsweredReplicaChannelMap.values()){
+			if(replicaChannel.group == Group.REPLICA){
+				notAnsweredReplicaChannelMap.put(replicaChannel.peerProcessName, replicaChannel);
+			}
+		}
+
+		HashMap<String, Message> answeredReplicaChannelMap = new HashMap<String, Message>();
+
+		while(true){
+			boolean timeout = false;
+			for(Channel replicaChannel: notAnsweredReplicaChannelMap.values()){
+				if(replicaChannel.receivedMessage == null){
+					if(replicaChannel.timeoutTimes > 5){
+						timeout = true;
+					}else{					
+						answeredReplicaChannelMap.put(replicaChannel.peerProcessName, replicaChannel.receivedMessage);
+						replicaChannel.receivedMessage = null;
+						notAnsweredReplicaChannelMap.remove(replicaChannel.peerProcessName);
+					}
+				}
+			}
+			if(timeout || notAnsweredReplicaChannelMap.isEmpty()){
+				break;
+			}
+		}
+		
+		//TODO calculateMajority AND each replica status
+		return null;
 	}
 }
 
+class ReplicaResponse{
+	ArrayList<String> goodReplicaList = new ArrayList<String>();
+	ArrayList<String> failReplicaList = new ArrayList<String>();
+	ArrayList<String> crashReplicaList = new ArrayList<String>();
+	Message majorMsg;
+}
