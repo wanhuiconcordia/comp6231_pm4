@@ -38,7 +38,7 @@ public class ChannelManager{
 		if(channelMap.containsKey(channel.peerProcessName)){
 			System.out.println(channel.peerProcessName + " already exists in channelMap!");
 		}else{
-			channelMap.put(channel.peerHost, channel);
+			channelMap.put(channel.peerProcessName, channel);
 			System.out.println("Udp channel to " + channel.peerProcessName + ":" + channel.peerHost + ":" + channel.peerPort);
 		}
 	}

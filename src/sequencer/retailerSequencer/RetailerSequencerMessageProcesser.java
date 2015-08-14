@@ -33,6 +33,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 		if(msg.action == Action.ACK){
 			channel.isWaitingForRespose = false;
 		}else{
+			channel.receivedMessage = msg;
 			channel.backupPacket = new Packet(channel.peerHost
 					, channel.peerPort
 					, new AckMessage(channel.localProcessName
@@ -50,16 +51,18 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 				channelManager.sequencerID++;
 				for(Channel replicaChannel: channelManager.channelMap.values()){
 					if(replicaChannel.group == Group.REPLICA){
-						channel.backupPacket = new Packet(channel.peerHost
-								, channel.peerPort
+						replicaChannel.backupPacket = new Packet(replicaChannel.peerHost
+								, replicaChannel.peerPort
 								, generateRetailerSequencerMessage(replicaChannel.localProcessName
 										, ++replicaChannel.localSeq
 										, replicaChannel.peerSeq
 										, channelManager.sequencerID
-										, msg)); 
-						replicaChannel.isWaitingForRespose = true;
+										, msg));
+						
+						channel.isWaitingForRespose = true;
 						synchronized(channelManager.outgoingPacketQueueLock) {
 							channelManager.outgoingPacketQueue.add(replicaChannel.backupPacket);
+							System.out.println("put this packet in outgoint queue:" + replicaChannel.backupPacket.toString());
 						}
 					}
 				}
@@ -76,6 +79,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 			, int peerSeq
 			, int sequencerID
 			, Message receivedMsg){
+		System.out.println("generateRetailerSequencerMessage() is called.");
 		switch(receivedMsg.action){
 		case getCatelog:
 			return new RetailerSequencerGetCatelogMessage(localProcessName
@@ -112,6 +116,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 					, ((RetailerFESubmitOrderMessage)receivedMsg).itemList
 					, sequencerID);
 		}
+		System.out.println("Bad action");
 		return null;
 	}
 }

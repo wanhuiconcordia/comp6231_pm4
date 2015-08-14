@@ -26,7 +26,7 @@ public class RetailerSequencer {
 		port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		channelManager.addChannel(new Channel(name, "RetailerFE", host, port, Group.FE));
 		
-		for(int i = 1; i <=4; i++){
+		for(int i = 1; i <= 4; i++){
 			host = ConfigureManager.getInstance().getString("RetailerReplica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerReplica" + i + "Port");
 			channelManager.addChannel(new Channel(name, "RetailerReplica" + i, host, port , Group.REPLICA));

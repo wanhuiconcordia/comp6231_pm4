@@ -19,14 +19,16 @@ public class WriteThread extends Thread {
 				synchronized(channelManager.outgoingPacketQueueLock) {
 					packet = channelManager.outgoingPacketQueue.remove();
 				}
-				networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);				
+				if(packet != null){
+//					System.out.println("Send packet:" + packet.toString());
+					networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);
+				}
 			}
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			channelManager.loggerClient.write("write thread is running...");
 		}
 	}
 

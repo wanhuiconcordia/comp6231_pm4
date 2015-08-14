@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jws.WebService;
-
-import jdk.internal.util.xml.impl.Pair;
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -21,6 +19,7 @@ import tools.SignUpResult;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.message.Action;
 import tools.message.Message;
 import tools.message.Packet;
 import tools.message.ResultComparator;
@@ -46,7 +45,7 @@ public class RetailerFEImpl implements RetailerInterface {
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		System.out.println(name + " udp channel:" + host + ":" + port);
 		
-		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerFEMessageProcesser());
+		channelManager = new ChannelManager(port, loggerClient, new RetailerFEMessageProcesser());
 		
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
@@ -59,8 +58,9 @@ public class RetailerFEImpl implements RetailerInterface {
 			
 			host = ConfigureManager.getInstance().getString("RetailerRM" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerRM" + i + "Port");
-			channelManager.addChannel(new Channel(name, "RetailerRM1", host, port, Group.RM));
+			channelManager.addChannel(new Channel(name, "RetailerRM" + i, host, port, Group.RM));
 		}
+		
 		channelManager.start();
 	}
 
@@ -120,7 +120,6 @@ public class RetailerFEImpl implements RetailerInterface {
 			String street2, String city, String state, String zip,
 			String country) {
 		System.out.println("signUp is called...");
-
 		for(Channel replicaChannel: channelManager.channelMap.values()){
 			replicaChannel.receivedMessage = null;
 			replicaChannel.timeoutTimes = 0;
@@ -130,8 +129,8 @@ public class RetailerFEImpl implements RetailerInterface {
 		channel.backupPacket = new Packet(channel.peerHost
 				, channel.peerPort
 				, new RetailerFESignUpMessage(channel.localProcessName
-						, channel.localSeq
-						, channel.peerPort
+						, ++channel.localSeq
+						, channel.peerSeq
 						, name
 						, password
 						, street1
@@ -141,20 +140,79 @@ public class RetailerFEImpl implements RetailerInterface {
 						, zip
 						, country));
 		channel.isWaitingForRespose = true;
-		synchronized(channelManager.outgoingPacketQueueLock) {
-			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+//		synchronized(channelManager.outgoingPacketQueueLock) {
+//			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+//		}
+//		
+		ReplicaResponse replicaResponse = waitForReplicResponse();
+		
+		ArrayList<RetailerReplicaSignUpReultMessage> retailerReplicaSignUpReultMessageList = new ArrayList<RetailerReplicaSignUpReultMessage>();  
+		for(Channel answeredChannel: replicaResponse.answeredReplicaChannelList){
+			if(answeredChannel.receivedMessage.action == Action.signUp){
+				retailerReplicaSignUpReultMessageList.add((RetailerReplicaSignUpReultMessage) answeredChannel.receivedMessage);
+			}else{
+				System.out.println("Received a different message. Should never happen. This replica is failed.");
+				//TODO
+			}
 		}
 		
-		ReplicaResponse majorResponse = waitForReplicResponse();
-		
-		if(majorResponse == null){
-			//BIG ERROR, WRITE TO LOGSERVER
-			return null;
-		}else{
-			//TODO notifyRetailerRM();
-			return ((RetailerReplicaSignUpReultMessage)(majorResponse.majorMsg)).signUpResult;
+		ArrayList<ArrayList<RetailerReplicaSignUpReultMessage>> messageGroup = new ArrayList<ArrayList<RetailerReplicaSignUpReultMessage>> ();
+		for(RetailerReplicaSignUpReultMessage retailerReplicaSignUpReultMessage :retailerReplicaSignUpReultMessageList){
+			boolean found = false;
+			for(ArrayList<RetailerReplicaSignUpReultMessage> tmpMsgList: messageGroup){ 
+				if(retailerReplicaSignUpReultMessage.hasSameResult(tmpMsgList.get(0))){
+					tmpMsgList.add(retailerReplicaSignUpReultMessage);
+					found = true;
+					break;
+				}
+			}
+			if(! found){
+				ArrayList<RetailerReplicaSignUpReultMessage> tmpMsgList = new ArrayList<RetailerReplicaSignUpReultMessage>();
+				tmpMsgList.add(retailerReplicaSignUpReultMessage);						
+				messageGroup.add(tmpMsgList);
+			}
 		}
+		
 
+		ArrayList<String> noAnswerProcessList = new ArrayList<String>();
+		for(Channel noAnswerChannel: replicaResponse.noAnswerReplicaChannelList){
+			noAnswerProcessList.add(noAnswerChannel.peerProcessName);
+		}
+		
+		int max = 0;
+		int index = -1;
+		for(int i = 0; i < messageGroup.size(); i++){
+			if(messageGroup.get(i).size() > max){
+				max = messageGroup.get(i).size();
+				index = i;
+			}
+		}
+		
+		ArrayList<String> goodProcessList = new ArrayList<String>();
+		ArrayList<String> failedProcessList = new ArrayList<String>();
+		for(int i = 0; i < messageGroup.size(); i++){
+			for(RetailerReplicaSignUpReultMessage tmpMsg: messageGroup.get(i)){
+				if(i == index){
+					goodProcessList.add(tmpMsg.sender);
+				}else{
+					failedProcessList.add(tmpMsg.sender);
+				}
+			}
+		}
+		
+		for(int i = 0; i < messageGroup.size(); i++){
+			if(messageGroup.get(i).size() > max){
+				max = messageGroup.get(i).size();
+				index = i;
+			}
+		}
+		
+		reportRM(goodProcessList, failedProcessList, noAnswerProcessList);
+		return messageGroup.get(index).get(0).signUpResult;
+	}
+	
+	void reportRM(ArrayList<String> goodProcessList, ArrayList<String> failedProcessList, ArrayList<String> noAnswerProcessList){
+		
 	}
 
 	/* (non-Javadoc)
@@ -167,8 +225,8 @@ public class RetailerFEImpl implements RetailerInterface {
 		channel.backupPacket = new Packet(channel.peerHost
 				, channel.peerPort
 				, new RetailerFESignInMessage(channel.localProcessName
-						, channel.localSeq
-						, channel.peerPort
+						, ++channel.localSeq
+						, channel.peerSeq
 						, customerReferenceNumber
 						, password));
 		channel.isWaitingForRespose = true;
@@ -191,20 +249,21 @@ public class RetailerFEImpl implements RetailerInterface {
 		}
 
 		ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
-
-		ArrayList<Channel> crashReplicaChannelList = new ArrayList<Channel>();
+		ArrayList<Channel> noAnswerReplicaChannelList = new ArrayList<Channel>();
 		while(true){
 			Channel replicaChannel;
 			for(int i = 0; i < waitingReplicaChannelList.size();){
 				replicaChannel = waitingReplicaChannelList.get(i);
 				if(replicaChannel.receivedMessage == null){
 					if(replicaChannel.timeoutTimes > 5){
-						crashReplicaChannelList.add(replicaChannel);
+						noAnswerReplicaChannelList.add(replicaChannel);
 						waitingReplicaChannelList.remove(i);
+						System.out.println(replicaChannel.peerProcessName + " time out...");
 					}else{
 						i++;
 					}
 				}else{
+					System.out.println(replicaChannel.peerProcessName + " give message:" + replicaChannel.receivedMessage.toString());
 					answeredReplicaChannelList.add(replicaChannel);
 					waitingReplicaChannelList.remove(i);
 				}
@@ -220,29 +279,19 @@ public class RetailerFEImpl implements RetailerInterface {
 			}
 		}
 
-		
-		for(Channel answeredChannel: answeredReplicaChannelList){
-			for(Map.Entry<Channel, Integer> channelCountPair: channelCountPairList){
-				ResultComparator result1 = (ResultComparator) channelCountPair.getKey().receivedMessage;
-				ResultComparator result2 = (ResultComparator) answeredChannel.receivedMessage;
-				if(result1.hasSameResult(result2)){
-					channelCountPairList.add(new Map.Entry<Channel, Integer>(answeredChannel, 1));
-				}
-			}
-		}
-		
-		
-		//TODO calculateMajority AND each replica status
-		return null;
+		return new ReplicaResponse(noAnswerReplicaChannelList, answeredReplicaChannelList);
 	}
 }
 
 
 
 class ReplicaResponse{
-	ArrayList<String> goodReplicaList = new ArrayList<String>();
-	ArrayList<String> failReplicaList = new ArrayList<String>();
-	ArrayList<String> crashReplicaList = new ArrayList<String>();
-	Message majorMsg;
+	public ArrayList<Channel> noAnswerReplicaChannelList = new ArrayList<Channel>();
+	public ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
+	public ReplicaResponse(ArrayList<Channel> noAnswerReplicaChannelList
+			, ArrayList<Channel> answeredReplicaChannelList){
+		this.noAnswerReplicaChannelList = noAnswerReplicaChannelList;
+		this.answeredReplicaChannelList = answeredReplicaChannelList;
+	}
 }
 

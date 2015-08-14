@@ -4,9 +4,6 @@ import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.Vector;
 
-import tools.SuplyChainObjComparator;
-
-
 public class Test {
 	public static String getPid() throws IOException,InterruptedException {
 
