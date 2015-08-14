@@ -8,14 +8,14 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
-import tools.message.RetailerFEGetCatelogMessage;
-import tools.message.RetailerFESignInMessage;
-import tools.message.RetailerFESignUpMessage;
-import tools.message.RetailerFESubmitOrderMessage;
-import tools.message.RetailerSequencerGetCatelogMessage;
-import tools.message.RetailerSequencerSignInMessage;
-import tools.message.RetailerSequencerSignUpMessage;
-import tools.message.RetailerSequencerSubmitOrderMessage;
+import tools.message.retailerFE.RetailerFEGetCatelogMessage;
+import tools.message.retailerFE.RetailerFESignInMessage;
+import tools.message.retailerFE.RetailerFESignUpMessage;
+import tools.message.retailerFE.RetailerFESubmitOrderMessage;
+import tools.message.retailerSequencer.RetailerSequencerGetCatelogMessage;
+import tools.message.retailerSequencer.RetailerSequencerSignInMessage;
+import tools.message.retailerSequencer.RetailerSequencerSignUpMessage;
+import tools.message.retailerSequencer.RetailerSequencerSubmitOrderMessage;
 
 public class RetailerSequencerMessageProcesser extends MessageProcesser {
 

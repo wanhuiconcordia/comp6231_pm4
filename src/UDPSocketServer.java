@@ -4,7 +4,7 @@ import java.net.SocketTimeoutException;
 import tools.channel.Channel;
 import tools.channel.Group;
 import tools.channel.NetworkIO;
-import tools.message.RetailerFESignInMessage;
+import tools.message.retailerFE.RetailerFESignInMessage;
 public class UDPSocketServer {
 
 	public static void main(String[] args) {

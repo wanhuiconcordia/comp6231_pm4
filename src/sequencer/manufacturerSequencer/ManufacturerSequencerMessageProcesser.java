@@ -7,16 +7,16 @@ import tools.message.AckMessage;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
-import tools.message.ManufacturerFEProcessPurchaseOrderMessage;
-import tools.message.ManufacturerFEGetProductInfoMessage;
-import tools.message.ManufacturerFEReceivePaymentMessage;
-import tools.message.ManufacturerFEGetNameMessage;
-import tools.message.ManufacturerFEGetProductListMessage;
-import tools.message.ManufacturerSequencerProcessPurchaseOrderMessage;
-import tools.message.ManufacturerSequencerGetProductInfoMessage;
-import tools.message.ManufacturerSequencerReceivePaymentMessage;
-import tools.message.ManufacturerSequencerGetNameMessage;
-import tools.message.ManufacturerSequencerGetProductListMessage;
+import tools.message.manufacturer.ManufacturerFEGetNameMessage;
+import tools.message.manufacturer.ManufacturerFEGetProductInfoMessage;
+import tools.message.manufacturer.ManufacturerFEGetProductListMessage;
+import tools.message.manufacturer.ManufacturerFEProcessPurchaseOrderMessage;
+import tools.message.manufacturer.ManufacturerFEReceivePaymentMessage;
+import tools.message.manufacturer.ManufacturerSequencerGetNameMessage;
+import tools.message.manufacturer.ManufacturerSequencerGetProductInfoMessage;
+import tools.message.manufacturer.ManufacturerSequencerGetProductListMessage;
+import tools.message.manufacturer.ManufacturerSequencerProcessPurchaseOrderMessage;
+import tools.message.manufacturer.ManufacturerSequencerReceivePaymentMessage;
 
 public class ManufacturerSequencerMessageProcesser implements MessageProcesser {
 

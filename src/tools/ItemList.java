@@ -51,4 +51,17 @@ public class ItemList implements Serializable{
 		}
 		return retStr;
 	}
+	
+	public boolean isSame(ItemList other){
+		if(innerItemList.size() != other.innerItemList.size()){
+			return false;
+		}else{
+			for(int i = 0; i < innerItemList.size() - 1; i++){	//Bad! not efficient.
+				if(!innerItemList.get(i).isSame(other.innerItemList.get(i))){
+					return false;
+				}
+			}
+			return true;
+		}
+	}
 }

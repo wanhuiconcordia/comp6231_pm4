@@ -3,9 +3,12 @@ package retailer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.jws.WebService;
 
+import jdk.internal.util.xml.impl.Pair;
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -20,11 +23,12 @@ import tools.channel.ChannelManager;
 import tools.channel.Group;
 import tools.message.Message;
 import tools.message.Packet;
-import tools.message.RetailerFEGetCatelogMessage;
-import tools.message.RetailerFESignInMessage;
-import tools.message.RetailerFESignUpMessage;
-import tools.message.RetailerFESubmitOrderMessage;
-import tools.message.RetailerReplicaSignUpReultMessage;
+import tools.message.ResultComparator;
+import tools.message.retailerFE.RetailerFEGetCatelogMessage;
+import tools.message.retailerFE.RetailerFESignInMessage;
+import tools.message.retailerFE.RetailerFESignUpMessage;
+import tools.message.retailerFE.RetailerFESubmitOrderMessage;
+import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
 
 @WebService(endpointInterface = "retailer.RetailerInterface")
 public class RetailerFEImpl implements RetailerInterface {
@@ -119,6 +123,7 @@ public class RetailerFEImpl implements RetailerInterface {
 
 		for(Channel replicaChannel: channelManager.channelMap.values()){
 			replicaChannel.receivedMessage = null;
+			replicaChannel.timeoutTimes = 0;
 		}
 		
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
@@ -177,38 +182,62 @@ public class RetailerFEImpl implements RetailerInterface {
 	
 
 	ReplicaResponse waitForReplicResponse(){
-		HashMap<String, Channel> notAnsweredReplicaChannelMap = new HashMap<String, Channel>();
+		ArrayList<Channel> waitingReplicaChannelList = new ArrayList<Channel>();
 	
-		for(Channel replicaChannel: notAnsweredReplicaChannelMap.values()){
+		for(Channel replicaChannel: channelManager.channelMap.values()){
 			if(replicaChannel.group == Group.REPLICA){
-				notAnsweredReplicaChannelMap.put(replicaChannel.peerProcessName, replicaChannel);
+				waitingReplicaChannelList.add(replicaChannel);
 			}
 		}
 
-		HashMap<String, Message> answeredReplicaChannelMap = new HashMap<String, Message>();
+		ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
 
+		ArrayList<Channel> crashReplicaChannelList = new ArrayList<Channel>();
 		while(true){
-			boolean timeout = false;
-			for(Channel replicaChannel: notAnsweredReplicaChannelMap.values()){
+			Channel replicaChannel;
+			for(int i = 0; i < waitingReplicaChannelList.size();){
+				replicaChannel = waitingReplicaChannelList.get(i);
 				if(replicaChannel.receivedMessage == null){
 					if(replicaChannel.timeoutTimes > 5){
-						timeout = true;
-					}else{					
-						answeredReplicaChannelMap.put(replicaChannel.peerProcessName, replicaChannel.receivedMessage);
-						replicaChannel.receivedMessage = null;
-						notAnsweredReplicaChannelMap.remove(replicaChannel.peerProcessName);
+						crashReplicaChannelList.add(replicaChannel);
+						waitingReplicaChannelList.remove(i);
+					}else{
+						i++;
 					}
+				}else{
+					answeredReplicaChannelList.add(replicaChannel);
+					waitingReplicaChannelList.remove(i);
 				}
 			}
-			if(timeout || notAnsweredReplicaChannelMap.isEmpty()){
+			if(waitingReplicaChannelList.isEmpty()){
 				break;
+			}else{
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+
+		
+		for(Channel answeredChannel: answeredReplicaChannelList){
+			for(Map.Entry<Channel, Integer> channelCountPair: channelCountPairList){
+				ResultComparator result1 = (ResultComparator) channelCountPair.getKey().receivedMessage;
+				ResultComparator result2 = (ResultComparator) answeredChannel.receivedMessage;
+				if(result1.hasSameResult(result2)){
+					channelCountPairList.add(new Map.Entry<Channel, Integer>(answeredChannel, 1));
+				}
+			}
+		}
+		
 		
 		//TODO calculateMajority AND each replica status
 		return null;
 	}
 }
+
+
 
 class ReplicaResponse{
 	ArrayList<String> goodReplicaList = new ArrayList<String>();
@@ -216,3 +245,4 @@ class ReplicaResponse{
 	ArrayList<String> crashReplicaList = new ArrayList<String>();
 	Message majorMsg;
 }
+

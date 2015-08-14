@@ -67,45 +67,19 @@ public class Product implements Serializable{
 		this.unitPrice = product.unitPrice;
 	}
 
-	/**
-	 * determine if the current product is the same as the other one
-	 * @param Product otherProduct
-	 * @return true if the same, false if not
-	 */
-	public boolean isSame(Product otherProduct){
-		return (productID.equals(otherProduct.productID));
+	public boolean isSame(Product other){
+		return productID.equals(other.productID)
+				&& manufacturerName.equals(other.manufacturerName)
+				&& productType.equals(other.productType)
+				&& unitPrice == other.unitPrice;
 	}
 	
-	/**
-	 * @return manufacturer name
-	 */
-	public String getManufacturerName(){
-		return manufacturerName;
-	}
-	
-	/**
-	 * @return product type
-	 */
-	public String getProductType(){
-		return productType;
-	}
-	
-	/**
-	 * @return
-	 */
-	public float getUnitPrice(){
-		return unitPrice;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
+	@Override
 	public Product clone(){
 		return new Product(this);
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	
+	@Override
 	public String toString(){
 		return productID
 				+ ", " + manufacturerName

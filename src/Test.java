@@ -4,6 +4,8 @@ import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.Vector;
 
+import tools.SuplyChainObjComparator;
+
 
 public class Test {
 	public static String getPid() throws IOException,InterruptedException {
@@ -26,15 +28,29 @@ public class Test {
 		}
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
-		System.out.println(Test.getPid());
+		tools.Product comp1 = new tools.Product("Apple", "TV", 32);
+		tools.Product comp2 = new tools.Product("Samsung", "TV", 32);
+		tools.Product comp3 = new tools.Product("Apple", "TV", 32);
 		
-		Process p = Runtime.getRuntime().exec("gedit");
-		System.out.println(p.toString());
 		
-		Scanner in = new Scanner(System.in);
-		in.next();
-		System.out.println("After Waiting...");
-		p.destroy();
+		System.out.println(comp1.isSame(comp2));
+		System.out.println(comp1.isSame(comp3));
+		
+		tools.Item comp4 = new tools.Item("Apple", "TV", 32, 10);
+		tools.Item comp5 = new tools.Item("Samsung", "TV", 32, 10);
+		tools.Item comp6 = new tools.Item("Apple", "TV", 32, 10);
+		
+		
+		System.out.println(comp4.isSame(comp5));
+		System.out.println(comp4.isSame(comp6));
+//		
+//		Process p = Runtime.getRuntime().exec("gedit");
+//		System.out.println(p.toString());
+		
+//		Scanner in = new Scanner(System.in);
+//		in.next();
+//		System.out.println("After Waiting...");
+////		p.destroy();
 	}
 
 }

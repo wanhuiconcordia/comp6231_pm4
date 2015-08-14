@@ -1,5 +1,4 @@
 package tools.message;
-
 import java.util.ArrayList;
 
 public class ReplicaResultMessage extends Message {
