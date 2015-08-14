@@ -28,25 +28,14 @@ public class WarehouseSequencer {
 		channelManager.addChannel(new Channel(processName, warehouseName+"FE", host, port
 				, Group.WarehouseFE));
 		
-		host = ConfigureManager.getInstance().getString(warehouseName+"Replica1Host");
-		port = ConfigureManager.getInstance().getInt(warehouseName+"Replica1Port");
-		channelManager.addChannel(new Channel(processName, warehouseName+"Replica1", host, port
-				, Group.WarehouseReplica));
+		for(int i = 1; i <=4; i++){
+			host = ConfigureManager.getInstance().getString(warehouseName+"Replica" + i + "Host");
+			port = ConfigureManager.getInstance().getInt(warehouseName+"Replica" + i + "Port");
+			channelManager.addChannel(new Channel(processName, warehouseName+"Replica" + i, host, port , Group.WarehouseReplica));
+		}
+
+		channelManager.start();
 		
-		host = ConfigureManager.getInstance().getString(warehouseName+"Replica2Host");
-		port = ConfigureManager.getInstance().getInt(warehouseName+"Replica2Port");
-		channelManager.addChannel(new Channel(processName, warehouseName+"Replica2", host, port
-				, Group.WarehouseReplica));
-		
-		host = ConfigureManager.getInstance().getString(warehouseName+"Replica3Host");
-		port = ConfigureManager.getInstance().getInt(warehouseName+"Replica3Port");
-		channelManager.addChannel(new Channel(processName, warehouseName+"Replica3", host, port, 
-				Group.WarehouseReplica));
-		
-		host = ConfigureManager.getInstance().getString(warehouseName+"Replica4Host");
-		port = ConfigureManager.getInstance().getInt(warehouseName+"Replica4Port");
-		channelManager.addChannel(new Channel(processName, warehouseName+"Replica4", host, port
-				, Group.WarehouseReplica));
 	}
 	
 	public static void main(String []argv){

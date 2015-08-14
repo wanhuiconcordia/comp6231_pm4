@@ -4,9 +4,17 @@ import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
 import tools.message.AckMessage;
+import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
+import tools.message.RetailerFESignInMessage;
+import tools.message.RetailerFESignUpMessage;
+import tools.message.RetailerFESubmitOrderMessage;
+import tools.message.RetailerSequencerGetCatelogMessage;
+import tools.message.RetailerSequencerSignInMessage;
+import tools.message.RetailerSequencerSignUpMessage;
+import tools.message.RetailerSequencerSubmitOrderMessage;
 import tools.message.WarehouseFEGetProductsMessage;
 import tools.message.WarehouseFEGetProductsByIDMessage;
 import tools.message.WarehouseFEGetProductsByRegisteredManufacturersMessage;
@@ -22,149 +30,117 @@ public class WarehouseSequencerMessageProcesser implements MessageProcesser {
 
 	@Override
 	public void processMessage(ChannelManager channelManager, Message msg) {
-		if(channelManager.channelMap.containsKey(msg.sender)){
-			Channel thisChannel = channelManager.channelMap.get(msg.sender);
 
-			if(thisChannel.verifySequence(msg)){
-				thisChannel.peerSeq = msg.senderSeq;
+		Channel channel = channelManager.channelMap.get(msg.sender);
+		if(msg.senderSeq < channel.peerSeq){
+			if(msg.action == Action.INIT){
+				channel.localSeq = 0;
+				channel.backupPacket = new Packet(channel.peerHost
+						, channel.peerPort
+						, new AckMessage(channel.localProcessName
+								, ++channel.localSeq
+								, msg.senderSeq));
+				synchronized(channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
+			}else{
+				System.out.println("Delayed msg, drop...");
+			}
+		}else if(msg.senderSeq == channel.peerSeq){
+			System.out.println("Just received msg. Respond with backupPacket.");
+			synchronized(channelManager.outgoingPacketQueueLock) {
+				channelManager.outgoingPacketQueue.add(channel.backupPacket);
+			}
+			
+		}else if(msg.senderSeq == channel.peerSeq + 1){
+			System.out.println("New good seq. Response and backup the packet");
+			if(msg.action == Action.ACK){
+				channel.isWaitingForRespose = false;
+			}else{
+				channel.backupPacket = new Packet(channel.peerHost
+						, channel.peerPort
+						, new AckMessage(channel.localProcessName
+								, ++channel.localSeq
+								, msg.senderSeq));
+				synchronized(channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
+				
 				switch(msg.action){
-				case ACK:
-					thisChannel.hasCachedMsg = false;
-					break;
-				case INIT:
-					thisChannel.localSeq = 0;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
-								, thisChannel.peerPort
-								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
-					}
-					break;
 				case shippingGoods:
 				case getProducts:
 				case getProductsByRegisteredManufacturers:
 				case getProductsByID:
 				case getProductsByType:
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(thisChannel.peerHost
-								, thisChannel.peerPort
-								, new AckMessage(thisChannel.localProcessName, ++thisChannel.localSeq, msg.senderSeq)));
+					channelManager.sequencerID++;
+					for(Channel castChannel: channelManager.channelMap.values()){
+						if(castChannel.group == Group.RetailerReplica){
+							castChannel.cachedMsg = generateWarehouseSequencerMessage(castChannel.localProcessName
+									, ++castChannel.localSeq
+									, castChannel.peerSeq
+									, channelManager.sequencerID
+									, msg); 
+							castChannel.isWaitingForRespose = true;
+							synchronized(channelManager.outgoingPacketQueueLock) {
+								channelManager.outgoingPacketQueue.add(castChannel.backupPacket);
+							}
+						}
 					}
-					dispatchMessage(channelManager, msg);
 					break;
-					
 				default:
 					System.out.println("Unrecognizable action");
 					break;
 				}
 			}
+			
 		}else{
-			System.out.println("channelMap does not contian " + msg.sender);
+			System.out.println("Messed seq.");
 		}
+		
 	}
 
-	@Override
-	public void dispatchMessage(ChannelManager channelManager, Message msg) {
-		switch(msg.action){
-		
+	
+	
+	private Message generateWarehouseSequencerMessage(String localProcessName
+			, int localSeq
+			, int peerSeq
+			, int sequencerID
+			, Message receivedMsg){
+		switch(receivedMsg.action){
 		case shippingGoods:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.WarehouseReplica){
-					channel.cachedMsg = new WarehouseSequencerShippingGoodsMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							,((WarehouseFEShippingGoodsMessage)msg).itemList 
-							, ((WarehouseFEShippingGoodsMessage)msg).retailerName
-							, channelManager.sequencerID); 
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}
-			break;
-			
+					return new WarehouseSequencerShippingGoodsMessage(localProcessName
+							, localSeq
+							, peerSeq
+							,((WarehouseFEShippingGoodsMessage)receivedMsg).itemList 
+							, ((WarehouseFEShippingGoodsMessage)receivedMsg).retailerName
+							, sequencerID); 
 		case getProducts:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.WarehouseReplica){
-					channel.cachedMsg = new WarehouseSequencerGetProductsMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq 
-							, ((WarehouseFEGetProductsMessage)msg).productID 
-							, ((WarehouseFEGetProductsMessage)msg).manufacturerName, channelManager.sequencerID);
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}			
-			break;
-			
+			return new WarehouseSequencerGetProductsMessage(localProcessName
+							, localSeq
+							, peerSeq 
+							, ((WarehouseFEGetProductsMessage)receivedMsg).productID 
+							, ((WarehouseFEGetProductsMessage)receivedMsg).manufacturerName
+							, sequencerID);
 		case getProductsByRegisteredManufacturers:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.WarehouseReplica){
-					channel.cachedMsg = new WarehouseSequencerGetProductsByRegisteredManufacturersMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, ((WarehouseFEGetProductsByRegisteredManufacturersMessage)msg).manufacturerName
-							, channelManager.sequencerID);
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}		
-			break;
-			
+			return new WarehouseSequencerGetProductsByRegisteredManufacturersMessage(localProcessName
+					, localSeq
+					, peerSeq
+					, ((WarehouseFEGetProductsByRegisteredManufacturersMessage)receivedMsg).manufacturerName
+					, sequencerID);
+	
 		case getProductsByID:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.WarehouseReplica){
-					channel.cachedMsg = new WarehouseSequencerGetProductsByIDMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, ((WarehouseFEGetProductsByIDMessage)msg).productID
-							, channelManager.sequencerID); 
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}
-			break;
-			
+			return new WarehouseSequencerGetProductsByIDMessage(localProcessName
+							, localSeq
+							, peerSeq
+							, ((WarehouseFEGetProductsByIDMessage)receivedMsg).productID
+							, sequencerID);
 		case getProductsByType:
-			channelManager.sequencerID++;
-			for(Channel channel: channelManager.channelMap.values()){
-				if(channel.group == Group.WarehouseReplica){
-					channel.cachedMsg = new WarehouseSequencerGetProductsByTypeMessage(channel.localProcessName
-							, ++channel.localSeq
-							, channel.peerSeq
-							, ((WarehouseFEGetProductsByTypeMessage)msg).productType
-							, channelManager.sequencerID); 
-					channel.hasCachedMsg = true;
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(new Packet(channel.peerHost
-								, channel.peerPort
-								, channel.cachedMsg));
-					}
-				}
-			}
-			break;	
-			
-		default:
-			System.out.println("Unrecognizable action");
-			break;
+			return new WarehouseSequencerGetProductsByIDMessage(localProcessName
+							, localSeq
+							, peerSeq
+							, ((WarehouseFEGetProductsByTypeMessage)receivedMsg).productType
+							, sequencerID);
 		}
+		return null;
 	}
 }
