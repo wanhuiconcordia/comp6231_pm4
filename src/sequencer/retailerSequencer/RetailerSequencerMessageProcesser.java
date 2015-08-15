@@ -25,14 +25,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 			channel.isWaitingForRespose = false;
 		}else{
 			channel.receivedMessage = msg;
-			channel.backupPacket = new Packet(channel.peerHost
-					, channel.peerPort
-					, new AckMessage(channel.localProcessName
-							, ++channel.localSeq
-							, msg.senderSeq));
-			synchronized(channelManager.outgoingPacketQueueLock) {
-				channelManager.outgoingPacketQueue.add(channel.backupPacket);
-			}
+			ackBack(channelManager, channel);
 
 			switch(msg.action){
 			case getCatelog:

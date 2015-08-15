@@ -24,14 +24,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 			case signIn:
 				break;
 			case signUp:
-				Message outGoingMsg = new AckMessage(channel.localProcessName
-						, ++channel.localSeq
-						, channel.peerSeq);
-				channel.backupPacket = new Packet(channel.peerHost,  channel.peerPort, outGoingMsg); 
-				channel.isWaitingForRespose = false;
-				synchronized (channelManager.outgoingPacketQueueLock) {
-					channelManager.outgoingPacketQueue.add(channel.backupPacket);
-				}
+				ackBack(channelManager, channel);
 
 				if(channelManager.channelMap.containsKey("RetailerFE")){
 					Channel FEChannel = channelManager.channelMap.get("RetailerFE");

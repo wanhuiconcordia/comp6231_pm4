@@ -1,4 +1,4 @@
-package retailer;
+package rm;
 
 import java.net.InetAddress;
 
@@ -23,7 +23,7 @@ public class RetailerRM {
 		System.out.println(name + index + " udp channel:" + host + ":" + port);
 		loggerClient.write(name + index + " udp channel:" + host + ":" + port);
 		
-		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerRMMessageProcesser("RetailerReplica", index));
+		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerRMMessageProcesser("./startRetailerReplica.sh", index));
 		
 		for(int i = 1; i <= 4; i++){
 			if(i != index){

@@ -56,5 +56,17 @@ public abstract class MessageProcesser {
 		}
 	}
 	
+	public void ackBack(ChannelManager channelManager,
+			Channel channel){
+		Message outGoingMsg = new AckMessage(channel.localProcessName
+				, ++channel.localSeq
+				, channel.peerSeq);
+		channel.backupPacket = new Packet(channel.peerHost,  channel.peerPort, outGoingMsg); 
+		channel.isWaitingForRespose = false;
+		synchronized (channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
+	}
+	
 	public abstract void processNewRequest(ChannelManager channelManager, Channel channel, Message msg);
 }
