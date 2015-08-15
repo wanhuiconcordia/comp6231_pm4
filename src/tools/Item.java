@@ -8,7 +8,7 @@ import org.dom4j.tree.DefaultElement;
  * @author comp6231.team5
  *
  */
-public class Item extends Product {
+public class Item extends Product{
 	public int quantity;
 	
 	public Item(){
@@ -62,9 +62,7 @@ public class Item extends Product {
 		return super.toString() + ", " + quantity; 
 	}
 	
-	/* (non-Javadoc)
-	 * @see tools.Product#clone()
-	 */
+	@Override
 	public Item clone(){
 		return new Item(this);
 	}
@@ -84,6 +82,12 @@ public class Item extends Product {
 	public boolean isSameProductAs(Item otherItem){
 		return super.isSame(otherItem);
 	}
+
+	public boolean isSame(Item other){
+		return super.isSame(other)
+				&& quantity == other.quantity;
+	}
+	
 	/**
 	 * save the current item to an  Element object
 	 * @return the Element object

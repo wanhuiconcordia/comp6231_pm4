@@ -79,4 +79,9 @@ public class ItemShippingStatus extends Item{
 	public String toString(){
 		return super.toString() + ",\t" + (shippingStatus ? "shipped" : "not shipped"); 
 	}
+	
+	public boolean isSame(ItemShippingStatus other){
+		return super.isSame(other)
+				&& shippingStatus == other.shippingStatus;
+	}
 }

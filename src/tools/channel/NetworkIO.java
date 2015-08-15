@@ -21,11 +21,11 @@ public class NetworkIO {
 	public NetworkIO(int port) throws SocketException{
 		keepWorking = true;
 		datagramSocket = new DatagramSocket(port);
-		datagramSocket.setSoTimeout(1000);
+		datagramSocket.setSoTimeout(1000);	
 	}
 	
 	public Message receiveMessage() throws SocketTimeoutException{
-		byte[] incomingData = new byte[1024];
+		byte[] incomingData = new byte[1024 * 8];
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 		try {
 			datagramSocket.receive(incomingPacket);
@@ -55,7 +55,7 @@ public class NetworkIO {
 	}
 	
 	public boolean sendMsg(Message msg, String receiverHost, int receiverPort){
-		System.out.println("Send msg:" + msg + " to " + receiverHost + ":" + receiverPort);
+		System.out.println("NetworkIO::sendMsg():" + msg + " to " + receiverHost + ":" + receiverPort);
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ObjectOutputStream os;
 		try {

@@ -9,18 +9,19 @@ import java.io.Serializable;
  *
  */
 public class SignUpResult implements Serializable{
-	public boolean result;
 	public int customerReferenceNumber;
+	public boolean result;
 	public String message;	//Server will give a message about the sign up status
 	
 	/**
 	 * Default constructor 
 	 */
 	public SignUpResult(){
-		result = false;
 		customerReferenceNumber = 0;
+		result = false;
 		message = new String();
 	}
+	
 	/**
 	 * constructor
 	 * @param result
@@ -28,8 +29,19 @@ public class SignUpResult implements Serializable{
 	 * @param message
 	 */
 	public SignUpResult(boolean result, int customerReferenceNumber, String message){
-		this.result = result;
 		this.customerReferenceNumber = customerReferenceNumber;
+		this.result = result;
 		this.message = message;
+	}
+	
+	@Override
+	public String toString(){
+		return customerReferenceNumber + ", " + result + ", " + message;
+	}
+	
+	public boolean isSame(SignUpResult other) {
+		return customerReferenceNumber == other.customerReferenceNumber
+				&& result == other.result
+				&& message.equals(other.message); 
 	}
 }

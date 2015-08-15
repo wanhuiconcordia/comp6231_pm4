@@ -8,23 +8,16 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
-import tools.message.RetailerFESignInMessage;
-import tools.message.RetailerFESignUpMessage;
-import tools.message.RetailerFESubmitOrderMessage;
-import tools.message.RetailerSequencerGetCatelogMessage;
-import tools.message.RetailerSequencerSignInMessage;
-import tools.message.RetailerSequencerSignUpMessage;
-import tools.message.RetailerSequencerSubmitOrderMessage;
-import tools.message.WarehouseFEGetProductsMessage;
-import tools.message.WarehouseFEGetProductsByIDMessage;
-import tools.message.WarehouseFEGetProductsByRegisteredManufacturersMessage;
-import tools.message.WarehouseFEGetProductsByTypeMessage;
-import tools.message.WarehouseFEShippingGoodsMessage;
-import tools.message.WarehouseSequencerGetProductsMessage;
-import tools.message.WarehouseSequencerGetProductsByIDMessage;
-import tools.message.WarehouseSequencerGetProductsByRegisteredManufacturersMessage;
-import tools.message.WarehouseSequencerGetProductsByTypeMessage;
-import tools.message.WarehouseSequencerShippingGoodsMessage;
+import tools.message.warehouse.WarehouseFEGetProductsByIDMessage;
+import tools.message.warehouse.WarehouseFEGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouse.WarehouseFEGetProductsByTypeMessage;
+import tools.message.warehouse.WarehouseFEGetProductsMessage;
+import tools.message.warehouse.WarehouseFEShippingGoodsMessage;
+import tools.message.warehouse.WarehouseSequencerGetProductsByIDMessage;
+import tools.message.warehouse.WarehouseSequencerGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouse.WarehouseSequencerGetProductsByTypeMessage;
+import tools.message.warehouse.WarehouseSequencerGetProductsMessage;
+import tools.message.warehouse.WarehouseSequencerShippingGoodsMessage;
 
 public class WarehouseSequencerMessageProcesser implements MessageProcesser {
 

@@ -38,7 +38,7 @@ public class ChannelManager{
 		if(channelMap.containsKey(channel.peerProcessName)){
 			System.out.println(channel.peerProcessName + " already exists in channelMap!");
 		}else{
-			channelMap.put(channel.peerHost, channel);
+			channelMap.put(channel.peerProcessName, channel);
 			System.out.println("Udp channel to " + channel.peerProcessName + ":" + channel.peerHost + ":" + channel.peerPort);
 		}
 	}
@@ -47,12 +47,8 @@ public class ChannelManager{
 		messageProcesser.processMessage(this, message);
 	}
 	
-	public void collectLostPacket(){
-		for(Channel channel: channelMap.values()){
-			if(channel.isWaitingForRespose){
-				outgoingPacketQueue.add(channel.backupPacket);
-			}
-		}
+	public void processTimeout(){
+		messageProcesser.processTimeout(this);
 	}
 	
 	public void start(){

@@ -51,4 +51,17 @@ public class ItemShippingStatusList implements Serializable{
 		}
 		return retStr;
 	}
+	
+	public boolean isSame(ItemShippingStatusList other){
+		if(innerItemShippingStatusList.size() != other.innerItemShippingStatusList.size()){
+			return false;
+		}else{
+			for(int i = 0; i < innerItemShippingStatusList.size() - 1; i++){	//Bad! not efficient.
+				if(!innerItemShippingStatusList.get(i).isSame(other.innerItemShippingStatusList.get(i))){
+					return false;
+				}
+			}
+			return true;
+		}
+	}
 }

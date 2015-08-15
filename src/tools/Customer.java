@@ -116,4 +116,16 @@ public class Customer implements Serializable{
 		subElem.setText(country);
 		return customerElem;
 	}
+
+	public boolean isSame(Customer otherCustomer) {
+		return customerReferenceNumber == otherCustomer.customerReferenceNumber
+				&& name.equals(otherCustomer.name)
+				&& password.equals(otherCustomer.password)
+				&& street1.equals(otherCustomer.street1)
+				&& street2.equals(otherCustomer.street2)
+				&& city.equals(otherCustomer.city)
+				&& state.equals(otherCustomer.state)
+				&& zip.equals(otherCustomer.zip)
+				&& country.equals(otherCustomer.country);
+	}
 }

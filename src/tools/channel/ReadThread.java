@@ -20,7 +20,7 @@ public class ReadThread extends Thread {
 					channelManager.processMessage(msg);
 				}
 			}catch(java.net.SocketTimeoutException e){
-				channelManager.collectLostPacket();
+				channelManager.processTimeout();
 			}
 		}
 	}

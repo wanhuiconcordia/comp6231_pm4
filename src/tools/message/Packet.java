@@ -9,4 +9,8 @@ public class Packet {
 		this.receiverPort = receiverPort;
 		this.msg = msg;
 	}
+	
+	public String toString(){
+		return receiverHost + ":" + receiverPort + ", " + msg.toString();
+	}
 }

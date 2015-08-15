@@ -42,6 +42,7 @@ public class ProductList implements Serializable{
 		innerProductList.clear();
 	}
 	
+	@Override
 	public String toString(){
 		String retStr = new String();
 		if(innerProductList != null){
@@ -50,5 +51,18 @@ public class ProductList implements Serializable{
 			}
 		}
 		return retStr;
+	}
+	
+	public boolean isSame(ProductList other){
+		if(innerProductList.size() != other.innerProductList.size()){
+			return false;
+		}else{
+			for(int i = 0; i < innerProductList.size() - 1; i++){	//Bad! not efficient.
+				if(!innerProductList.get(i).isSame(other.innerProductList.get(i))){
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }
