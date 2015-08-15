@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jws.WebService;
+
 import tools.ConfigureManager;
 import tools.Customer;
 import tools.Item;
@@ -44,23 +45,23 @@ public class RetailerFEImpl implements RetailerInterface {
 		String host = ConfigureManager.getInstance().getString("RetailerFEHost");
 		int port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		System.out.println(name + " udp channel:" + host + ":" + port);
-		
+
 		channelManager = new ChannelManager(port, loggerClient, new RetailerFEMessageProcesser());
-		
+
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
 		channelManager.addChannel(new Channel(name, "RetailerSequencer", host, port, Group.SEQUENCER));
-		
+
 		for(int i = 1; i <= 4; i++){
 			host = ConfigureManager.getInstance().getString("RetailerReplica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerReplica" + i + "Port");
 			channelManager.addChannel(new Channel(name, "RetailerReplica" + i, host, port, Group.REPLICA));
-			
+
 			host = ConfigureManager.getInstance().getString("RetailerRM" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerRM" + i + "Port");
 			channelManager.addChannel(new Channel(name, "RetailerRM" + i, host, port, Group.RM));
 		}
-		
+
 		channelManager.start();
 	}
 
@@ -82,9 +83,9 @@ public class RetailerFEImpl implements RetailerInterface {
 		synchronized(channelManager.outgoingPacketQueueLock) {
 			channelManager.outgoingPacketQueue.add(channel.backupPacket);
 		}
-		
+
 		//TODO wait for replica message coming
-		
+
 		return null;
 	}
 
@@ -95,7 +96,7 @@ public class RetailerFEImpl implements RetailerInterface {
 	public synchronized ItemShippingStatusList submitOrder(int customerReferenceNumber,
 			ItemList itemOrderList) {
 		System.out.println("ItemShippingStatusList is called...");
-		
+
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
 		channel.backupPacket = new Packet(channel.peerHost
 				, channel.peerPort
@@ -124,7 +125,7 @@ public class RetailerFEImpl implements RetailerInterface {
 			replicaChannel.receivedMessage = null;
 			replicaChannel.timeoutTimes = 0;
 		}
-		
+
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
 		channel.backupPacket = new Packet(channel.peerHost
 				, channel.peerPort
@@ -140,12 +141,9 @@ public class RetailerFEImpl implements RetailerInterface {
 						, zip
 						, country));
 		channel.isWaitingForRespose = true;
-//		synchronized(channelManager.outgoingPacketQueueLock) {
-//			channelManager.outgoingPacketQueue.add(channel.backupPacket);
-//		}
-//		
+
 		ReplicaResponse replicaResponse = waitForReplicResponse();
-		
+
 		ArrayList<RetailerReplicaSignUpReultMessage> retailerReplicaSignUpReultMessageList = new ArrayList<RetailerReplicaSignUpReultMessage>();  
 		for(Channel answeredChannel: replicaResponse.answeredReplicaChannelList){
 			if(answeredChannel.receivedMessage.action == Action.signUp){
@@ -155,7 +153,7 @@ public class RetailerFEImpl implements RetailerInterface {
 				//TODO
 			}
 		}
-		
+
 		ArrayList<ArrayList<RetailerReplicaSignUpReultMessage>> messageGroup = new ArrayList<ArrayList<RetailerReplicaSignUpReultMessage>> ();
 		for(RetailerReplicaSignUpReultMessage retailerReplicaSignUpReultMessage :retailerReplicaSignUpReultMessageList){
 			boolean found = false;
@@ -172,13 +170,14 @@ public class RetailerFEImpl implements RetailerInterface {
 				messageGroup.add(tmpMsgList);
 			}
 		}
-		
+
 
 		ArrayList<String> noAnswerProcessList = new ArrayList<String>();
 		for(Channel noAnswerChannel: replicaResponse.noAnswerReplicaChannelList){
 			noAnswerProcessList.add(noAnswerChannel.peerProcessName);
+			System.out.println("No response process:" + noAnswerChannel.peerProcessName);
 		}
-		
+
 		int max = 0;
 		int index = -1;
 		for(int i = 0; i < messageGroup.size(); i++){
@@ -187,32 +186,34 @@ public class RetailerFEImpl implements RetailerInterface {
 				index = i;
 			}
 		}
-		
+
 		ArrayList<String> goodProcessList = new ArrayList<String>();
 		ArrayList<String> failedProcessList = new ArrayList<String>();
 		for(int i = 0; i < messageGroup.size(); i++){
 			for(RetailerReplicaSignUpReultMessage tmpMsg: messageGroup.get(i)){
 				if(i == index){
 					goodProcessList.add(tmpMsg.sender);
+					System.out.println("Good process:" + tmpMsg.sender);
 				}else{
 					failedProcessList.add(tmpMsg.sender);
+					System.out.println("Failed process:" + tmpMsg.sender);
 				}
 			}
 		}
-		
+
 		for(int i = 0; i < messageGroup.size(); i++){
 			if(messageGroup.get(i).size() > max){
 				max = messageGroup.get(i).size();
 				index = i;
 			}
 		}
-		
+
 		reportRM(goodProcessList, failedProcessList, noAnswerProcessList);
 		return messageGroup.get(index).get(0).signUpResult;
 	}
-	
+
 	void reportRM(ArrayList<String> goodProcessList, ArrayList<String> failedProcessList, ArrayList<String> noAnswerProcessList){
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -233,15 +234,15 @@ public class RetailerFEImpl implements RetailerInterface {
 		synchronized(channelManager.outgoingPacketQueueLock) {
 			channelManager.outgoingPacketQueue.add(channel.backupPacket);
 		}
-		
+
 		//TODO wait for replica message coming
 		return null;
 	}
-	
+
 
 	ReplicaResponse waitForReplicResponse(){
 		ArrayList<Channel> waitingReplicaChannelList = new ArrayList<Channel>();
-	
+
 		for(Channel replicaChannel: channelManager.channelMap.values()){
 			if(replicaChannel.group == Group.REPLICA){
 				waitingReplicaChannelList.add(replicaChannel);
@@ -250,35 +251,38 @@ public class RetailerFEImpl implements RetailerInterface {
 
 		ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
 		ArrayList<Channel> noAnswerReplicaChannelList = new ArrayList<Channel>();
+
+		int timeCount = 60;
+		int interval = 50;
 		while(true){
-			Channel replicaChannel;
-			for(int i = 0; i < waitingReplicaChannelList.size();){
-				replicaChannel = waitingReplicaChannelList.get(i);
-				if(replicaChannel.receivedMessage == null){
-					if(replicaChannel.timeoutTimes > 5){
-						noAnswerReplicaChannelList.add(replicaChannel);
-						waitingReplicaChannelList.remove(i);
-						System.out.println(replicaChannel.peerProcessName + " time out...");
-					}else{
-						i++;
-					}
-				}else{
-					System.out.println(replicaChannel.peerProcessName + " give message:" + replicaChannel.receivedMessage.toString());
-					answeredReplicaChannelList.add(replicaChannel);
-					waitingReplicaChannelList.remove(i);
+			for(Channel channel: waitingReplicaChannelList){
+				if(channel.receivedMessage != null){
+					System.out.println(channel.peerProcessName + " give message:" + channel.receivedMessage.toString());
+					answeredReplicaChannelList.add(channel);
+					waitingReplicaChannelList.remove(channel);
+					break;
 				}
 			}
-			if(waitingReplicaChannelList.isEmpty()){
+			
+			if(waitingReplicaChannelList.size() == 0){
 				break;
-			}else{
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			}
+			try {
+				Thread.sleep(interval);
+				timeCount--;
+				if(timeCount <= 0){
+					for(Channel channel: waitingReplicaChannelList){
+						noAnswerReplicaChannelList.add(channel);
+						System.out.println(channel.peerProcessName + " time out...");
+					}
+					System.out.println("time out. do not wait.");
+					break;
 				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-
+		
 		return new ReplicaResponse(noAnswerReplicaChannelList, answeredReplicaChannelList);
 	}
 }

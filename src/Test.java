@@ -41,12 +41,12 @@ public class Test {
 		System.out.println(comp4.isSame(comp5));
 		System.out.println(comp4.isSame(comp6));
 //		
-//		Process p = Runtime.getRuntime().exec("gedit");
-//		System.out.println(p.toString());
-		
-//		Scanner in = new Scanner(System.in);
-//		in.next();
-//		System.out.println("After Waiting...");
+////		Process p = Runtime.getRuntime().exec("gedit");
+////		System.out.println(p.toString());
+//		
+////		Scanner in = new Scanner(System.in);
+////		in.next();
+////		System.out.println("After Waiting...");
 ////		p.destroy();
 	}
 

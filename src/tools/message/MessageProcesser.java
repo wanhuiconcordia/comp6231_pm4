@@ -43,8 +43,9 @@ public abstract class MessageProcesser {
 		for(Channel channel: channelManager.channelMap.values()){
 			if(channel.isWaitingForRespose){
 				channel.timeoutTimes++;
+				System.out.println(channel.peerProcessName + " channel.timeoutTimes:" + channel.timeoutTimes);
 				System.out.println("MessageProcesser::processTimeout() is called.");
-				if(channel.timeoutTimes > 300){
+				if(channel.timeoutTimes > 5){
 					channel.isWaitingForRespose = false;
 				}else{
 					synchronized(channelManager.outgoingPacketQueueLock) {

@@ -20,15 +20,6 @@ import tools.message.retailerSequencer.RetailerSequencerSubmitOrderMessage;
 public class RetailerSequencerMessageProcesser extends MessageProcesser {
 
 	@Override
-	public void processTimeout(ChannelManager channelManager){
-		for(Channel channel: channelManager.channelMap.values()){
-			if(channel.isWaitingForRespose){
-				channelManager.outgoingPacketQueue.add(channel.backupPacket);
-			}
-		}
-	}
-
-	@Override
 	public void processNewRequest(ChannelManager channelManager, Channel channel, Message msg) {
 		if(msg.action == Action.ACK){
 			channel.isWaitingForRespose = false;
@@ -59,7 +50,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 										, channelManager.sequencerID
 										, msg));
 						
-						channel.isWaitingForRespose = true;
+						replicaChannel.isWaitingForRespose = true;
 						synchronized(channelManager.outgoingPacketQueueLock) {
 							channelManager.outgoingPacketQueue.add(replicaChannel.backupPacket);
 							System.out.println("put this packet in outgoint queue:" + replicaChannel.backupPacket.toString());
