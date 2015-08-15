@@ -28,10 +28,14 @@ public class LoggerClient {
 			OutputStream outputStream = clientSocket.getOutputStream();
 			dataOutputStream = new DataOutputStream(outputStream);
 			connected = true;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			connected = false;
-			e.printStackTrace();
+			System.out.println("Cannot connect to loggerServer.");
 		}
+	}
+	
+	public void setSenderName(String sender){
+		this.sender = sender;
 	}
 
 	/**
