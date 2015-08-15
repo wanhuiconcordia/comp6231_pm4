@@ -23,6 +23,7 @@ import tools.channel.Group;
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.Packet;
+import tools.message.ReplicaResultMessage;
 import tools.message.ResultComparator;
 import tools.message.retailerFE.RetailerFEGetCatelogMessage;
 import tools.message.retailerFE.RetailerFESignInMessage;
@@ -213,7 +214,19 @@ public class RetailerFEImpl implements RetailerInterface {
 	}
 
 	void reportRM(ArrayList<String> goodProcessList, ArrayList<String> failedProcessList, ArrayList<String> noAnswerProcessList){
-
+		for(Channel channel: channelManager.channelMap.values()){
+			if(channel.peerProcessName.startsWith("RetailerRM")){
+				channel.backupPacket = new Packet(channel.peerHost
+				, channel.peerPort
+				, new ReplicaResultMessage(channel.localProcessName
+						, ++channel.localSeq
+						, channel.peerSeq
+						, goodProcessList
+						, failedProcessList
+						, noAnswerProcessList));
+				channel.isWaitingForRespose = true;
+			}
+		}
 	}
 
 	/* (non-Javadoc)

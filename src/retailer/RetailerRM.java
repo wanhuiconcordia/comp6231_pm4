@@ -13,6 +13,7 @@ public class RetailerRM {
 	int index;
 	ChannelManager channelManager; 
 	LoggerClient loggerClient;
+	Process replicaProcess;
 	public RetailerRM(LoggerClient loggerClient, int index) throws Exception{
 		this.name = "RetailerRM";
 		this.loggerClient = loggerClient;
@@ -22,7 +23,7 @@ public class RetailerRM {
 		System.out.println(name + index + " udp channel:" + host + ":" + port);
 		loggerClient.write(name + index + " udp channel:" + host + ":" + port);
 		
-		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerRMMessageProcesser());
+		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerRMMessageProcesser("RetailerReplica", index));
 		
 		for(int i = 1; i <= 4; i++){
 			if(i != index){
@@ -39,10 +40,6 @@ public class RetailerRM {
 		host = ConfigureManager.getInstance().getString("RetailerReplica" + index + "Host");
 		port = ConfigureManager.getInstance().getInt("RetailerReplica" + index + "Port");
 		channelManager.addChannel(new Channel(name + index, "RetailerReplica" + index, host, port, Group.REPLICA));
-		String cmd = "java retailer.RetailerReplica 4 0";
-		cmd = "./startRetailerReplica.sh " + index + " 0"; 
-		//Runtime.getRuntime().exec("./startRetailerReplica.sh 3 0");
-		Runtime.getRuntime().exec(cmd);
 		
 		channelManager.start();
 	}

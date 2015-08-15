@@ -14,10 +14,10 @@ import tools.channel.Group;
 
 public class RetailerReplica {
 	String name;
-	int mode;	//0 INIT; 1,2,3,4 Copy from Replica 1,2,3,4
+	String mode;	//None; RetailerReplica1;RetailerReplica2;RetailerReplica3;RetailerReplica4
 	ChannelManager channelManager; 
 	LoggerClient loggerClient;
-	public RetailerReplica(LoggerClient loggerClient, int index, int mode) throws Exception{
+	public RetailerReplica(LoggerClient loggerClient, int index, String mode) throws Exception{
 		String baseName = "RetailerReplica";
 		String name = baseName + index;
 		this.mode = mode;
@@ -57,15 +57,14 @@ public class RetailerReplica {
 		if(args.length == 2){
 			try{
 				int index = Integer.parseInt(args[0]); 
-				int mode = Integer.parseInt(args[1]);
-				if(index > 0 && index < 5 && mode >= 0 && mode < 5){
+				if(index > 0 && index < 5){
 					LoggerClient loggerClient = new LoggerClient("RetailerReplica" + index);
 					try {
 						String localIp = InetAddress.getLocalHost().getHostAddress();
 						String configHost = ConfigureManager.getInstance().getString("RetailerReplica" + index + "Host");
 						if(localIp.equals(configHost)){
 							try{
-								RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, mode);
+								RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, args[1]);
 							}catch(Exception e){
 								loggerClient.write(e.toString());
 								e.printStackTrace();
@@ -83,7 +82,7 @@ public class RetailerReplica {
 					
 				}else{
 					LoggerClient loggerClient = new LoggerClient("NON serialized RetailerReplica");
-					loggerClient.write("index range[1-4], mode range[0-4]. Received index:" + index + ", mode:" + mode);
+					loggerClient.write("index range[1-4]. Received index:" + index);
 				}
 			}catch(NumberFormatException e){
 				LoggerClient loggerClient = new LoggerClient("NON serialized RetailerReplica");

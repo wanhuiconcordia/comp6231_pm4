@@ -11,6 +11,10 @@ import tools.message.MessageProcesser;
 import tools.message.Packet;
 
 public class RetailerRMMessageProcesser extends MessageProcesser{
+
+	public RetailerRMMessageProcesser(String replicaName , int index){
+		
+	}
 	@Override
 	public void processNewRequest(ChannelManager channelManager,
 			Channel channel, Message msg) {
