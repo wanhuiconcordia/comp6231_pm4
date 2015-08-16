@@ -32,7 +32,7 @@ public class RM {
 		
 		String runReplicaCmd = ConfigureManager.getInstance().getString("run" + type + "ReplicaCMD");
 		if(type.equals("Retailer")){
-			messageProcesser = new RetailerRMMessageProcesser(runReplicaCmd, index);
+			messageProcesser = new RMMessageProcesser(runReplicaCmd, index);
 		}else if(type.equals("Warehouse")){
 //			messageProcesser = new WarehouseRMMessageProcesser(runReplicaCmd, index);
 			throw new Exception("Not Implimented Replica type:" + type);

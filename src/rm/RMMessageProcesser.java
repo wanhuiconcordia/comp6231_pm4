@@ -11,21 +11,21 @@ import tools.message.ReplicaResultMessage;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
+import tools.message.rm.RMSyncMessage;
 
-public class RetailerRMMessageProcesser extends MessageProcesser{
+public class RMMessageProcesser extends MessageProcesser{
 	public Process replicaProcess;
 	public String runReplicaCmd;
 	public String fullRunReplicaCmd;
 	public int index;
 	public int failCount;
-	public RetailerRMMessageProcesser(String runReplicaCmd, int index){
+	public RMMessageProcesser(String runReplicaCmd, int index){
 		this.runReplicaCmd = runReplicaCmd;
 		this.index = index;
-		fullRunReplicaCmd = runReplicaCmd + " " + index + " NONE"; 
+		fullRunReplicaCmd = runReplicaCmd + " " + index + " 0"; 
 		try {
 			replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		failCount = 0;
@@ -56,9 +56,26 @@ public class RetailerRMMessageProcesser extends MessageProcesser{
 						replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
 						failCount = 0;
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} 
+				}else{
+					for(Channel tmpChannel: channelManager.channelMap.values()){
+						if(tmpChannel.group == Group.REPLICA){
+							
+							tmpChannel.backupPacket = new Packet(tmpChannel.peerProcessName, tmpChannel.peerHost
+									, tmpChannel.peerPort
+									, new RMSyncMessage(tmpChannel.localProcessName
+											, ++tmpChannel.localSeq
+											, tmpChannel.peerSeq
+											, replicaResultMessage.goodReplicaIndex));
+							
+							tmpChannel.isWaitingForRespose = true;
+							synchronized(channelManager.outgoingPacketQueueLock) {
+								channelManager.outgoingPacketQueue.add(tmpChannel.backupPacket);
+							}
+							break;
+						}
+					}
 				}
 				break;
 			case noAnswer:
@@ -70,7 +87,6 @@ public class RetailerRMMessageProcesser extends MessageProcesser{
 					replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
 					failCount = 0;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				break;
