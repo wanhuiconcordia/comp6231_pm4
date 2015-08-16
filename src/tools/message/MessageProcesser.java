@@ -10,7 +10,7 @@ public abstract class MessageProcesser {
 			if(msg.senderSeq < channel.peerSeq){
 				if(msg.action == Action.INIT){
 					channel.localSeq = 0;
-					channel.backupPacket = new Packet(channel.peerHost
+					channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 							, channel.peerPort
 							, new AckMessage(channel.localProcessName
 									, ++channel.localSeq
@@ -28,7 +28,8 @@ public abstract class MessageProcesser {
 				}
 				
 			}else if(msg.senderSeq == channel.peerSeq + 1){
-				System.out.println("New good seq. Response and backup the packet");
+//				System.out.println("New good seq. Response and backup the packet");
+				channel.peerSeq = msg.senderSeq;
 				processNewRequest(channelManager, channel, msg);				
 			}else{
 				System.out.println("Messed seq.");
@@ -61,7 +62,7 @@ public abstract class MessageProcesser {
 		Message outGoingMsg = new AckMessage(channel.localProcessName
 				, ++channel.localSeq
 				, channel.peerSeq);
-		channel.backupPacket = new Packet(channel.peerHost,  channel.peerPort, outGoingMsg); 
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost,  channel.peerPort, outGoingMsg); 
 		channel.isWaitingForRespose = false;
 		synchronized (channelManager.outgoingPacketQueueLock) {
 			channelManager.outgoingPacketQueue.add(channel.backupPacket);

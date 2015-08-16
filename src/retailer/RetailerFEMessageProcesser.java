@@ -17,6 +17,7 @@ public class RetailerFEMessageProcesser extends MessageProcesser {
 			channel.isWaitingForRespose = false;
 		}else{
 			channel.receivedMessage = msg;
+			System.out.println(channel.peerProcessName + " message is saved in receivedMessage.");
 			ackBack(channelManager, channel);
 
 			switch(msg.action){

@@ -40,7 +40,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 							, ++FEChannel.localSeq
 							, FEChannel.peerSeq
 							, result);
-					FEChannel.backupPacket = new Packet(FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
+					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
 					FEChannel.isWaitingForRespose = true;
 					synchronized (channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(FEChannel.backupPacket);

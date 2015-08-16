@@ -28,7 +28,9 @@ public class RM {
 		loggerClient.write(name + index + " udp channel:" + host + ":" + port);
 
 		MessageProcesser messageProcesser = null;
-		String runReplicaCmd = "./start" + type + "Replica.sh";
+		//String runReplicaCmd = "./start" + type + "Replica.sh";
+		
+		String runReplicaCmd = ConfigureManager.getInstance().getString("run" + type + "ReplicaCMD");
 		if(type.equals("Retailer")){
 			messageProcesser = new RetailerRMMessageProcesser(runReplicaCmd, index);
 		}else if(type.equals("Warehouse")){

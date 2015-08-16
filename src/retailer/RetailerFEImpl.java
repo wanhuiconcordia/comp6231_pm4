@@ -76,7 +76,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		System.out.println("getCatalog is called...");
 		resetReplicaChannel();
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
-		channel.backupPacket = new Packet(channel.peerHost
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFEGetCatelogMessage(channel.localProcessName
 						, channel.localSeq
@@ -100,7 +100,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		System.out.println("ItemShippingStatusList is called...");
 		resetReplicaChannel();
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
-		channel.backupPacket = new Packet(channel.peerHost
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFESubmitOrderMessage(channel.localProcessName
 						, channel.localSeq
@@ -126,7 +126,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		System.out.println("signUp is called...");
 		resetReplicaChannel();
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
-		channel.backupPacket = new Packet(channel.peerHost
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFESignUpMessage(channel.localProcessName
 						, ++channel.localSeq
@@ -155,7 +155,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 	public Customer signIn(int customerReferenceNumber, String password) {
 		resetReplicaChannel();
 		Channel channel = channelManager.channelMap.get("RetailerSequencer");
-		channel.backupPacket = new Packet(channel.peerHost
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFESignInMessage(channel.localProcessName
 						, ++channel.localSeq
@@ -174,27 +174,60 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		}
 	}
 	
-	
-	void reportRM(ArrayList<String> goodProcessList, ArrayList<String> failedProcessList, ArrayList<String> noAnswerProcessList){
-		for(Channel channel: channelManager.channelMap.values()){
-			ReplicaResultMessage msg = new ReplicaResultMessage(channel.localProcessName
-					, ++channel.localSeq
-					, channel.peerSeq
-					, ReplicaStatus.good
-					, 1);
-			if(channel.peerProcessName.startsWith("RetailerRM")){
-				channel.backupPacket = new Packet(channel.peerHost
-				, channel.peerPort
-				, msg);
+	private void reportReplicaResult(ReplicaResponse replicaResponse){
+		String goodChannelProcessName = replicaResponse.goodReplicaChannelList.get(0).peerProcessName;
+		int goodReplicaIndex = goodChannelProcessName.charAt(goodChannelProcessName.length() - 1) - 48;
+		
+		for(Channel channel: replicaResponse.goodReplicaChannelList){
+			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
+			if(channelManager.channelMap.containsKey(rm_processName)){
+				Channel rmChannel = channelManager.channelMap.get(rm_processName);
+				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
+						, ++rmChannel.localSeq
+						, rmChannel.peerSeq
+						, ReplicaStatus.good
+						, goodReplicaIndex);
 				
-//				, ReplicaStatus replicaStatus
-//				, int goodReplicaIndex
-				channel.isWaitingForRespose = true;
+				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
+						, rmChannel.peerPort
+						, msg);
+				rmChannel.isWaitingForRespose = true;
 			}
 		}
-	}
-	private void reportReplicaResult(ReplicaResponse replicaResponse){
 		
+		for(Channel channel: replicaResponse.failReplicaChannelList){
+			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
+			if(channelManager.channelMap.containsKey(rm_processName)){
+				Channel rmChannel = channelManager.channelMap.get(rm_processName);
+				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
+						, ++rmChannel.localSeq
+						, rmChannel.peerSeq
+						, ReplicaStatus.fail
+						, goodReplicaIndex);
+				
+				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
+						, rmChannel.peerPort
+						, msg);
+				rmChannel.isWaitingForRespose = true;
+			}
+		}
+		
+		for(Channel channel: replicaResponse.noAnswerReplicaChannelList){
+			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
+			if(channelManager.channelMap.containsKey(rm_processName)){
+				Channel rmChannel = channelManager.channelMap.get(rm_processName);
+				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
+						, ++rmChannel.localSeq
+						, rmChannel.peerSeq
+						, ReplicaStatus.noAnswer
+						, goodReplicaIndex);
+				
+				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
+						, rmChannel.peerPort
+						, msg);
+				rmChannel.isWaitingForRespose = true;
+			}
+		}
 	}
 }
 

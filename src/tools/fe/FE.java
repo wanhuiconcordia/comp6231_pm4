@@ -27,6 +27,8 @@ public class FE {
 				waitingReplicaChannelList.add(replicaChannel);
 			}
 		}
+		
+		int totalWaitingChannelCount = waitingReplicaChannelList.size();
 
 		ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
 		ArrayList<Channel> noAnswerReplicaChannelList = new ArrayList<Channel>();
@@ -36,7 +38,7 @@ public class FE {
 		while(true){
 			for(Channel channel: waitingReplicaChannelList){
 				if(channel.receivedMessage != null){
-//					System.out.println(channel.peerProcessName + " give message:" + channel.receivedMessage.toString());
+//					System.out.println(channel.peerProcessName + " answered with:" + channel.receivedMessage.toString());
 					answeredReplicaChannelList.add(channel);
 					waitingReplicaChannelList.remove(channel);
 					break;
@@ -62,7 +64,7 @@ public class FE {
 		}
 		
 		
-		if(waitingReplicaChannelList.size() >= noAnswerReplicaChannelList.size() * 3 + 1){
+		if(totalWaitingChannelCount >= noAnswerReplicaChannelList.size() * 3 + 1){
 			int majorIndex = -1;
 			int maxCount = 0;
 			ArrayList<ArrayList<Channel>> channelListList = new ArrayList<ArrayList<Channel>>();

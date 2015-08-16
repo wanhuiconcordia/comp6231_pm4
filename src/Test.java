@@ -9,25 +9,11 @@ import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
 
 public class Test {
 	public static void main(String[] args) throws IOException, InterruptedException {
-		RetailerReplicaSignUpReultMessage msg1 = new RetailerReplicaSignUpReultMessage("sender"
-				, 22
-				, 23
-				, new SignUpResult());
+		String testStr = "Warehouse1Replica1";
+		String testStr2 = testStr.replaceAll("Replica", "RM");
+		System.out.println(testStr);
+		System.out.println(testStr2);
 		
-		RetailerReplicaSignUpReultMessage msg2 = new RetailerReplicaSignUpReultMessage("sender"
-				, 22
-				, 23
-				, new SignUpResult());
-		
-		RetailerReplicaSignInResultMessage msg3 = new RetailerReplicaSignInResultMessage("sender"
-				, 22
-				, 23
-				, new Customer());
-		if(((ResultComparator)msg1).hasSameResult((ResultComparator)msg3)){
-			System.out.println("same");
-		}else{
-			System.out.println("different");
-		}
 	}
 
 }

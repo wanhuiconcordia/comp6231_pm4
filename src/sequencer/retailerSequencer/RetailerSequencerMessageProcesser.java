@@ -35,7 +35,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 				channelManager.sequencerID++;
 				for(Channel replicaChannel: channelManager.channelMap.values()){
 					if(replicaChannel.group == Group.REPLICA){
-						replicaChannel.backupPacket = new Packet(replicaChannel.peerHost
+						replicaChannel.backupPacket = new Packet(replicaChannel.peerProcessName, replicaChannel.peerHost
 								, replicaChannel.peerPort
 								, generateRetailerSequencerMessage(replicaChannel.localProcessName
 										, ++replicaChannel.localSeq

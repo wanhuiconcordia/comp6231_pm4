@@ -20,7 +20,7 @@ public class WriteThread extends Thread {
 					packet = channelManager.outgoingPacketQueue.remove();
 				}
 				if(packet != null){
-//					System.out.println("Send packet:" + packet.toString());
+					System.out.println("Send packet:" + packet.toString());
 					networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);
 				}
 			}
