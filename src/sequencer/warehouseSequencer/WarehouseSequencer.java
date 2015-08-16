@@ -1,5 +1,5 @@
 package sequencer.warehouseSequencer;
-import sequencer.retailerSequencer.RetailerSequencerMessageProcesser;
+import sequencer.warehouseSequencer.WarehouseSequencerMessageProcesser;
 import tools.ConfigureManager;
 import tools.LoggerClient;
 import tools.channel.Channel;
@@ -21,17 +21,17 @@ public class WarehouseSequencer {
 		System.out.println(processName + " udp channel:" + host + ":" + port);
 		loggerClient = new LoggerClient(processName);
 		
-		ChannelManager channelManager = new ChannelManager(port,loggerClient,new WarehouseSequencerMessageProcesser());
+		ChannelManager channelManager = new ChannelManager(port,loggerClient, new WarehouseSequencerMessageProcesser());
 		
 		host = ConfigureManager.getInstance().getString(warehouseName+"FEHost");
 		port = ConfigureManager.getInstance().getInt(warehouseName+"FEPort");
 		channelManager.addChannel(new Channel(processName, warehouseName+"FE", host, port
-				, Group.WarehouseFE));
+				, Group.FE));
 		
 		for(int i = 1; i <=4; i++){
 			host = ConfigureManager.getInstance().getString(warehouseName+"Replica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt(warehouseName+"Replica" + i + "Port");
-			channelManager.addChannel(new Channel(processName, warehouseName+"Replica" + i, host, port , Group.WarehouseReplica));
+			channelManager.addChannel(new Channel(processName, warehouseName+"Replica" + i, host, port , Group.REPLICA));
 		}
 
 		channelManager.start();
