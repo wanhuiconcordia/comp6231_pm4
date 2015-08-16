@@ -11,5 +11,9 @@ public class ManufacturerSequencerProcessPurchaseOrderMessage extends Manufactur
 		this.sequencerID = sequencerID;
 	}
 	
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 
 }

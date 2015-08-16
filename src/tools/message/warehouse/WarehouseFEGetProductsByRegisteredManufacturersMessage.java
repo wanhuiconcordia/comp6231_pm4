@@ -13,4 +13,8 @@ public class WarehouseFEGetProductsByRegisteredManufacturersMessage extends Mess
 		this.manufacturerName = manufacturerName;
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + manufacturerName;
+	}
 }

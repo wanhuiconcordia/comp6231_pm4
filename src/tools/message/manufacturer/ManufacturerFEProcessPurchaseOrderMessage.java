@@ -12,4 +12,9 @@ public class ManufacturerFEProcessPurchaseOrderMessage extends Message{
 		super(sender, senderSeq, receiverSeq, Action.processPurchaseOrder);
 		this.item = item;
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + item.toString();
+	}
 }

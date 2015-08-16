@@ -10,5 +10,10 @@ public class ManufacturerFEGetProductInfoMessage extends Message{
 		super(sender,senderSeq,receiverSeq, Action.getProductInfo);
 		this.aProdName = aProdName;
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + aProdName;
+	}
 
 }

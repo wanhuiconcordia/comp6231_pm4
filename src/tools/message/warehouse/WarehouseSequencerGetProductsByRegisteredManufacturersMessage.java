@@ -10,4 +10,8 @@ public class WarehouseSequencerGetProductsByRegisteredManufacturersMessage exten
 		this.sequencerID = sequencerID;
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 }

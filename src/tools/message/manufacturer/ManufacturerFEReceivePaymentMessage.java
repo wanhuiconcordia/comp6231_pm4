@@ -12,4 +12,9 @@ public class ManufacturerFEReceivePaymentMessage extends Message{
 		this.totalPrice = totalPrice;
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + orderNum
+				+ ", " + totalPrice;
+	}
 }

@@ -13,5 +13,11 @@ public class WarehouseFEGetProductsMessage extends Message{
 		this.productID = productID;
 		this.manufacturerName = manufacturerName;
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + productID
+				+ ", " + manufacturerName;
+	}
 
 }

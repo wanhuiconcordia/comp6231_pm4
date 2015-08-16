@@ -9,4 +9,5 @@ public class ManufacturerFEGetProductListMessage extends Message{
 		
 		super(sender, senderSeq, receiverSeq, Action.getProductList);
 	}
+	
 }

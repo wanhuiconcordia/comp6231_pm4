@@ -17,5 +17,11 @@ public class WarehouseFEShippingGoodsMessage extends Message{
 		
 		
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + itemList.toString()
+				+ ", " + retailerName;
+	}
 
 }

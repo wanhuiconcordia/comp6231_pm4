@@ -8,4 +8,8 @@ public class ManufacturerSequencerGetProductListMessage extends ManufacturerFEGe
 		this.sequencerID = sequencerID;
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 }

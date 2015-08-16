@@ -12,4 +12,8 @@ public class WarehouseFEGetProductsByTypeMessage extends Message{
 		this.productType = productType;
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + productType;
+	}
 }

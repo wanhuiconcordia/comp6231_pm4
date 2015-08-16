@@ -9,5 +9,8 @@ public class ManufacturerSequencerReceivePaymentMessage extends ManufacturerFERe
 		this.sequencerID = sequencerID;
 	}
 	
-
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 }

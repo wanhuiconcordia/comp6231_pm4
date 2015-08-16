@@ -10,9 +10,11 @@ public class WarehouseSequencerShippingGoodsMessage extends WarehouseFEShippingG
 	public WarehouseSequencerShippingGoodsMessage(String sender, int senderSeq, int receiverSeq,ItemList itemList,String retailerName, int sequencerID){
 		super(sender, senderSeq, receiverSeq, itemList, retailerName);
 		this.itemList = itemList;
-		this.sequencerID = sequencerID;
-		
-		
+		this.sequencerID = sequencerID;		
 	}
 
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 }

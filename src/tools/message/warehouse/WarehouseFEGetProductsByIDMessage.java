@@ -9,5 +9,10 @@ public class WarehouseFEGetProductsByIDMessage extends Message{
 		super(sender, senderSeq, receiverSeq, Action.getProductsByID);
 		this.productID = productID;
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + productID;
+	}
 
 }

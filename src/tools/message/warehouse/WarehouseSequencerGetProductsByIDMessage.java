@@ -9,4 +9,9 @@ public class WarehouseSequencerGetProductsByIDMessage extends WarehouseFEGetProd
 		
 		this.sequencerID = sequencerID;
 	}
+	
+	public String toString(){
+		return super.toString() 
+				+ ", " + sequencerID;
+	}
 }
