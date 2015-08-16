@@ -10,7 +10,7 @@ public class RetailerReplicaSignUpReultMessage extends Message implements Result
 	public RetailerReplicaSignUpReultMessage(String sender
 			, int senderSeq
 			, int receiverSeq
-			,SignUpResult signUpResult) {
+			, SignUpResult signUpResult) {
 		super(sender, senderSeq, receiverSeq, Action.signUp);
 		this.signUpResult = signUpResult;
 	}

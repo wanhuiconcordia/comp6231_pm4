@@ -16,13 +16,27 @@ public class RetailerReplicaSignInResultMessage extends Message implements Resul
 	
 	@Override
 	public String toString(){
+		if(customer == null){
+			return super.toString() + ", null";
+		}
 		return super.toString()
 				+ ", " + customer.toString();
 	}
 
 	@Override
 	public boolean hasSameResult(RetailerReplicaSignInResultMessage other) {
-		return customer.isSame(other.customer);
+		if(customer == null){
+			if(other.customer == null){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			if(other.customer == null){
+				return true;
+			}else{
+				return customer.isSame(other.customer);
+			}
+		}
 	}
-
 }
