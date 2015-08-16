@@ -2,6 +2,8 @@ package warehouse;
 
 import javax.jws.WebService;
 
+import com.sun.org.apache.xerces.internal.parsers.CachingParserPool.SynchronizedGrammarPool;
+
 import tools.ConfigureManager;
 import tools.ItemList;
 import tools.LoggerClient;
@@ -9,11 +11,20 @@ import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
 import tools.fe.FE;
+import tools.fe.ReplicaResponse;
+import tools.message.Packet;
+import tools.message.retailerFE.RetailerFEGetCatelogMessage;
+import tools.message.retailerReplica.RetailerReplicaGetCatalogResultMessage;
+import tools.message.warehouse.WarehouseFEGetProductsByIDMessage;
+import tools.message.warehouse.WarehouseReplicaGetProductsByIDMessage;
 
 @WebService(endpointInterface = "warehouse.WarehouseInterface")
 public class WarehouseFEImpl extends FE implements WarehouseInterface {
 	public LoggerClient loggerClient;
 	public String name;
+	public int currentSequencerID;
+	public Object cachedObj;
+	public Object lock = new Object();
 	/**
 	 * Constructor
 	 * @param name
@@ -44,46 +55,72 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 		
 		channelManager.start();
 	}
-
 	@Override
-	public synchronized ItemList getProductsByID(String productID) {
-		
-		return null;
+	public ItemList getProductsByID(String productID, int sequencerID) {
+		synchronized (lock) {
+			if(sequencerID == currentSequencerID){
+				if(cachedObj == null){
+					return null;
+				}else{
+					return (ItemList)cachedObj;
+				}
+			}else if(currentSequencerID == sequencerID + 1){
+				resetReplicaChannel();
+				Channel channel = channelManager.channelMap.get(name + "Sequencer");
+				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
+						, channel.peerPort
+						, new RetailerFEGetCatelogMessage(channel.localProcessName
+								, channel.localSeq
+								, channel.peerPort
+								, 333));
+				channel.isWaitingForRespose = true;
+				
+				ReplicaResponse replicaResponse = waitForReplicResponse();
+
+				if(replicaResponse == null){
+					return null;
+				}else{
+					reportReplicaResult(replicaResponse);
+					return ((WarehouseReplicaGetProductsByIDMessage)(replicaResponse.goodReplicaChannelList.get(0).receivedMessage)).itemList;
+				}
+			}else{
+				System.out.println("Bad sequencerID. currentSequencerID:" + currentSequencerID + ", Received sequencerID:" + sequencerID);
+				return null;
+			}
+		}
 	}
-
 	@Override
-	public ItemList getProductsByType(String productType) {
+	public ItemList getProductsByType(String productType, int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
-	public ItemList getProductsByRegisteredManufacturers(String manufacturerName) {
+	public ItemList getProductsByRegisteredManufacturers(
+			String manufacturerName, int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
-	public ItemList getProducts(String productID, String manufacturerName) {
+	public ItemList getProducts(String productID, String manufacturerName,
+			int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
-	public boolean registerRetailer(String retailerName) {
+	public boolean registerRetailer(String retailerName, int sequencerID) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 	@Override
-	public boolean unregisterRegailer(String retailerName) {
+	public boolean unregisterRegailer(String retailerName, int sequencerID) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 	@Override
-	public ItemList shippingGoods(ItemList itemList, String reatilername) {
+	public ItemList shippingGoods(ItemList itemList, String reatilername,
+			int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

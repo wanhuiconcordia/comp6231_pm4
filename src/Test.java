@@ -9,10 +9,13 @@ import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
 
 public class Test {
 	public static void main(String[] args) throws IOException, InterruptedException {
-		String testStr = "Warehouse1Replica1";
-		String testStr2 = testStr.replaceAll("Replica", "RM");
-		System.out.println(testStr);
-		System.out.println(testStr2);
+		
+		Object obj = 1;
+		System.out.println(obj);
+//		String testStr = "Warehouse1Replica1";
+//		String testStr2 = testStr.replaceAll("Replica", "RM");
+//		System.out.println(testStr);
+//		System.out.println(testStr2);
 		
 	}
 

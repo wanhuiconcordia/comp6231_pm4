@@ -5,6 +5,6 @@ public enum Action {
 	sync, askSync, doSync,
 	signUp, signIn, getCatelog, submitOrder,
 	shippingGoods, getProducts, getProductsByRegisteredManufacturers,
-	getProductsByID, getProductsByType, getProductsBytype,processPurchaseOrder, getProductInfo, receivePayment, getProductList,getName,
+	getProductsByID, getProductsByType, processPurchaseOrder, getProductInfo, receivePayment, getProductList, getName,
 	test
 }

@@ -22,7 +22,18 @@ public class RetailerReplicaSubmitOrderMessage extends Message implements
 	
 	@Override
 	public boolean hasSameResult(RetailerReplicaSubmitOrderMessage other) {
-		return itemShippingStatusList.isSame(other.itemShippingStatusList);
+		if(itemShippingStatusList == null){
+			if(other.itemShippingStatusList == null){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			if(other.itemShippingStatusList == null){
+				return false;
+			}else{
+				return itemShippingStatusList.isSame(other.itemShippingStatusList);
+			}
+		}
 	}
-
 }

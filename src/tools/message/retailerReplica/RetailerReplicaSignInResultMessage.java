@@ -33,7 +33,7 @@ public class RetailerReplicaSignInResultMessage extends Message implements Resul
 			}
 		}else{
 			if(other.customer == null){
-				return true;
+				return false;
 			}else{
 				return customer.isSame(other.customer);
 			}

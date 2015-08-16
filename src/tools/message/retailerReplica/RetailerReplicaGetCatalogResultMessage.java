@@ -22,7 +22,19 @@ public class RetailerReplicaGetCatalogResultMessage extends Message implements
 	
 	@Override
 	public boolean hasSameResult(RetailerReplicaGetCatalogResultMessage other) {
-		return itemList.isSame(other.itemList);
+		if(itemList == null){
+			if(other.itemList == null){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			if(other.itemList == null){
+				return false;
+			}else{
+				return itemList.isSame(other.itemList);
+			}
+		}
 	}
 
 }

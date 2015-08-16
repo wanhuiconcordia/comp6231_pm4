@@ -8,7 +8,7 @@ public class WarehouseFEGetProductsByTypeMessage extends Message{
 	public String productType;
 	
 	public WarehouseFEGetProductsByTypeMessage(String sender, int senderSeq, int receiverSeq, String productType){
-		super(sender, senderSeq, receiverSeq, Action.getProductsBytype);
+		super(sender, senderSeq, receiverSeq, Action.getProductsByType);
 		this.productType = productType;
 	}
 

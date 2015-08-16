@@ -21,6 +21,18 @@ public class RetailerReplicaSignUpReultMessage extends Message implements Result
 
 	@Override
 	public boolean hasSameResult(RetailerReplicaSignUpReultMessage other) {
-		return signUpResult.isSame(other.signUpResult);
+		if(signUpResult == null){
+			if(other.signUpResult == null){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			if(other.signUpResult == null){
+				return false;
+			}else{
+				return signUpResult.isSame(other.signUpResult);
+			}
+		}
 	}
 }
