@@ -1,5 +1,5 @@
 package sequencer.manufacturerSequencer;
-import sequencer.retailerSequencer.RetailerSequencerMessageProcesser;
+import sequencer.manufacturerSequencer.ManufacturerSequencerMessageProcesser;
 import tools.ConfigureManager;
 import tools.LoggerClient;
 import tools.channel.Channel;
@@ -21,32 +21,20 @@ public class ManufacturerSequencer {
 		System.out.println(processName + " udp channel:" + host + ":" + port);
 		loggerClient = new LoggerClient(processName);
 		
-		ChannelManager channelManager = new ChannelManager(port,loggerClient,new ManufacturerSequencerMessageProcesser());
+		ChannelManager channelManager = new ChannelManager(port,loggerClient, new ManufacturerSequencerMessageProcesser());
 		
 		host = ConfigureManager.getInstance().getString(manufacturerName+"FEHost");
 		port = ConfigureManager.getInstance().getInt(manufacturerName+"FEPort");
 		channelManager.addChannel(new Channel(processName, manufacturerName+"FE", host, port
-				, Group.ManufacturerFE));
+				, Group.FE));
 		
-		host = ConfigureManager.getInstance().getString(manufacturerName+"Replica1Host");
-		port = ConfigureManager.getInstance().getInt(manufacturerName+"Replica1Port");
-		channelManager.addChannel(new Channel(processName, manufacturerName+"Replica1", host, port
-				, Group.ManufacturerReplica));
-		
-		host = ConfigureManager.getInstance().getString(manufacturerName+"Replica2Host");
-		port = ConfigureManager.getInstance().getInt(manufacturerName+"Replica2Port");
-		channelManager.addChannel(new Channel(processName, manufacturerName+"Replica2", host, port
-				, Group.ManufacturerReplica));
-		
-		host = ConfigureManager.getInstance().getString(manufacturerName+"Replica3Host");
-		port = ConfigureManager.getInstance().getInt(manufacturerName+"Replica3Port");
-		channelManager.addChannel(new Channel(processName, manufacturerName+"Replica3", host, port, 
-				Group.ManufacturerReplica));
-		
-		host = ConfigureManager.getInstance().getString(manufacturerName+"Replica4Host");
-		port = ConfigureManager.getInstance().getInt(manufacturerName+"Replica4Port");
-		channelManager.addChannel(new Channel(processName, manufacturerName+"Replica4", host, port
-				, Group.ManufacturerReplica));
+		for(int i = 1; i <=4; i++){
+			host = ConfigureManager.getInstance().getString(manufacturerName+"Replica" + i + "Host");
+			port = ConfigureManager.getInstance().getInt(manufacturerName+"Replica" + i + "Port");
+			channelManager.addChannel(new Channel(processName, manufacturerName+"Replica" + i, host, port , Group.REPLICA));
+		}
+
+		channelManager.start();
 	}
 	
 	public static void main(String []argv){

@@ -8,6 +8,7 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
+
 import tools.message.warehouse.WarehouseFEGetProductsByIDMessage;
 import tools.message.warehouse.WarehouseFEGetProductsByRegisteredManufacturersMessage;
 import tools.message.warehouse.WarehouseFEGetProductsByTypeMessage;
@@ -19,76 +20,48 @@ import tools.message.warehouse.WarehouseSequencerGetProductsByTypeMessage;
 import tools.message.warehouse.WarehouseSequencerGetProductsMessage;
 import tools.message.warehouse.WarehouseSequencerShippingGoodsMessage;
 
-public class WarehouseSequencerMessageProcesser implements MessageProcesser {
+public class WarehouseSequencerMessageProcesser extends MessageProcesser {
 
 	@Override
-	public void processMessage(ChannelManager channelManager, Message msg) {
+	public void processNewRequest(ChannelManager channelManager, Channel channel, Message msg) {
+		if(msg.action == Action.ACK){
+			channel.isWaitingForRespose = false;
+		}else{
+			channel.receivedMessage = msg;
+			ackBack(channelManager, channel);
 
-		Channel channel = channelManager.channelMap.get(msg.sender);
-		if(msg.senderSeq < channel.peerSeq){
-			if(msg.action == Action.INIT){
-				channel.localSeq = 0;
-				channel.backupPacket = new Packet(channel.peerHost
-						, channel.peerPort
-						, new AckMessage(channel.localProcessName
-								, ++channel.localSeq
-								, msg.senderSeq));
-				synchronized(channelManager.outgoingPacketQueueLock) {
-					channelManager.outgoingPacketQueue.add(channel.backupPacket);
-				}
-			}else{
-				System.out.println("Delayed msg, drop...");
-			}
-		}else if(msg.senderSeq == channel.peerSeq){
-			System.out.println("Just received msg. Respond with backupPacket.");
-			synchronized(channelManager.outgoingPacketQueueLock) {
-				channelManager.outgoingPacketQueue.add(channel.backupPacket);
-			}
-			
-		}else if(msg.senderSeq == channel.peerSeq + 1){
-			System.out.println("New good seq. Response and backup the packet");
-			if(msg.action == Action.ACK){
-				channel.isWaitingForRespose = false;
-			}else{
-				channel.backupPacket = new Packet(channel.peerHost
-						, channel.peerPort
-						, new AckMessage(channel.localProcessName
-								, ++channel.localSeq
-								, msg.senderSeq));
-				synchronized(channelManager.outgoingPacketQueueLock) {
-					channelManager.outgoingPacketQueue.add(channel.backupPacket);
-				}
-				
-				switch(msg.action){
-				case shippingGoods:
-				case getProducts:
-				case getProductsByRegisteredManufacturers:
-				case getProductsByID:
-				case getProductsByType:
-					channelManager.sequencerID++;
-					for(Channel castChannel: channelManager.channelMap.values()){
-						if(castChannel.group == Group.RetailerReplica){
-							castChannel.cachedMsg = generateWarehouseSequencerMessage(castChannel.localProcessName
-									, ++castChannel.localSeq
-									, castChannel.peerSeq
-									, channelManager.sequencerID
-									, msg); 
-							castChannel.isWaitingForRespose = true;
-							synchronized(channelManager.outgoingPacketQueueLock) {
-								channelManager.outgoingPacketQueue.add(castChannel.backupPacket);
-							}
+			switch(msg.action){
+			case shippingGoods:
+			case getProducts:
+			case getProductsByRegisteredManufacturers:
+			case getProductsByID:
+			case getProductsByType:
+				channelManager.sequencerID++;
+				for(Channel replicaChannel: channelManager.channelMap.values()){
+					if(replicaChannel.group == Group.REPLICA){
+						replicaChannel.backupPacket = new Packet(replicaChannel.peerProcessName, replicaChannel.peerHost
+								, replicaChannel.peerPort
+								, generateWarehouseSequencerMessage(replicaChannel.localProcessName
+										, ++replicaChannel.localSeq
+										, replicaChannel.peerSeq
+										, channelManager.sequencerID
+										, msg));
+						
+						replicaChannel.isWaitingForRespose = true;
+						synchronized(channelManager.outgoingPacketQueueLock) {
+							channelManager.outgoingPacketQueue.add(replicaChannel.backupPacket);
+							System.out.println("put this packet in outgoint queue:" + replicaChannel.backupPacket.toString());
 						}
 					}
-					break;
-				default:
-					System.out.println("Unrecognizable action");
-					break;
 				}
+				break;
+			default:
+				System.out.println("Unrecognizable action");
+				break;
 			}
-			
-		}else{
-			System.out.println("Messed seq.");
 		}
+
+		
 		
 	}
 
@@ -99,6 +72,7 @@ public class WarehouseSequencerMessageProcesser implements MessageProcesser {
 			, int peerSeq
 			, int sequencerID
 			, Message receivedMsg){
+		System.out.println("generateWarehouseSequencerMessage() is called.");
 		switch(receivedMsg.action){
 		case shippingGoods:
 					return new WarehouseSequencerShippingGoodsMessage(localProcessName
@@ -134,6 +108,9 @@ public class WarehouseSequencerMessageProcesser implements MessageProcesser {
 							, ((WarehouseFEGetProductsByTypeMessage)receivedMsg).productType
 							, sequencerID);
 		}
+		System.out.println("Bad action");
 		return null;
 	}
+
+
 }
