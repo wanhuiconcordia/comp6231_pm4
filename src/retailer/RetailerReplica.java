@@ -14,12 +14,14 @@ import tools.channel.Group;
 
 public class RetailerReplica {
 	String name;
-	String mode;	//None; RetailerReplica1;RetailerReplica2;RetailerReplica3;RetailerReplica4
+	int index;
+	int mode;	
 	ChannelManager channelManager; 
 	LoggerClient loggerClient;
-	public RetailerReplica(LoggerClient loggerClient, int index, String mode) throws Exception{
+	public RetailerReplica(LoggerClient loggerClient, int index, int mode) throws Exception{
 		String baseName = "RetailerReplica";
 		String name = baseName + index;
+		this.index = index;
 		this.mode = mode;
 		this.loggerClient = loggerClient; 
 		loggerClient.write("index:" + index + ", mode:" + mode);
@@ -54,43 +56,44 @@ public class RetailerReplica {
 	}
 
 	public static void main(String[] args) {
+		String baseName = "RetailerReplica";
+		String paraOptions = "Wrong parameters. 2 parameters are expected. Para 1 is for RetailerReplica index(1-4). Para 2 is for open mode(0-4)";
+		LoggerClient loggerClient = new LoggerClient(baseName);
 		if(args.length == 2){
 			try{
-				int index = Integer.parseInt(args[0]); 
-				if(index > 0 && index < 5){
-					LoggerClient loggerClient = new LoggerClient("RetailerReplica" + index);
+				int index = Integer.parseInt(args[0]);
+				int mode = Integer.parseInt(args[1]);
+				if(index > 0 && index < 5 && mode >=0 && mode < 5){
+					String fullName = baseName + index;
+					loggerClient.setSenderName(fullName);
 					try {
 						String localIp = InetAddress.getLocalHost().getHostAddress();
-						String configHost = ConfigureManager.getInstance().getString("RetailerReplica" + index + "Host");
+						String configHost = ConfigureManager.getInstance().getString(fullName + "Host");
 						if(localIp.equals(configHost)){
-							try{
-								RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, args[1]);
-							}catch(Exception e){
-								loggerClient.write(e.toString());
-								e.printStackTrace();
-							}
+							RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, mode);
 						}else{
-							System.out.println("Please run the RetailerRM" + index +" on:" 
-									+ configHost + " or change the RetailerRM" + index + "Host of configure file to:" + localIp);
+							System.out.println("Please run the " + fullName + " on:" 
+									+ configHost + " or change the " + fullName + "Host of configure file to:" + localIp);
 
-							loggerClient.write("Please run the RetailerRM" + index +" on:" 
-									+ configHost + " or change the RetailerRM" + index + "Host of configure file to:" + localIp);
+							loggerClient.write("Please run the " + fullName +" on:" 
+									+ configHost + " or change the " + fullName + "Host of configure file to:" + localIp);
 						}
 					} catch (Exception e1) {
+						e1.printStackTrace();
 						loggerClient.write(e1.toString());
 					}
-					
 				}else{
-					LoggerClient loggerClient = new LoggerClient("NON serialized RetailerReplica");
-					loggerClient.write("index range[1-4]. Received index:" + index);
+					System.out.println(paraOptions);
+					loggerClient.write(paraOptions);	
 				}
+				
 			}catch(NumberFormatException e){
-				LoggerClient loggerClient = new LoggerClient("NON serialized RetailerReplica");
-				loggerClient.write("Wrong parameter(s):" + args[0] + ", " + args[1]);
+				System.out.println(paraOptions);
+				loggerClient.write(paraOptions);
 			}
 		}else{
-			LoggerClient loggerClient = new LoggerClient("NON serialized RetailerReplica");
-			loggerClient.write("Miss parameter(s). Parameter count:" + args.length);
+			System.out.println(paraOptions);
+			loggerClient.write(paraOptions);
 		}
 	}
 }
