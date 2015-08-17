@@ -15,8 +15,8 @@ import tools.fe.ReplicaResponse;
 import tools.message.Packet;
 import tools.message.retailerFE.RetailerFEGetCatelogMessage;
 import tools.message.retailerReplica.RetailerReplicaGetCatalogResultMessage;
-import tools.message.warehouse.WarehouseFEGetProductsByIDMessage;
-import tools.message.warehouse.WarehouseReplicaGetProductsByIDMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByIDMessage;
+import tools.message.warehouseReplica.WarehouseReplicaGetProductsByIDMessage;
 
 @WebService(endpointInterface = "warehouse.WarehouseInterface")
 public class WarehouseFEImpl extends FE implements WarehouseInterface {

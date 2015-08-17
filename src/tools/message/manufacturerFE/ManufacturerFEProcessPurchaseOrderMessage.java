@@ -1,4 +1,4 @@
-package tools.message.manufacturer;
+package tools.message.manufacturerFE;
 
 import tools.Item;
 import tools.message.Action;

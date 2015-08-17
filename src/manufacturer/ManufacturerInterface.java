@@ -22,30 +22,29 @@ public interface ManufacturerInterface {
 	/**
 	 * get processing order number
 	 * @param item
+	 * @param sequencerID
 	 * @return OrderNo
 	 */
-	@WebMethod String processPurchaseOrder (Item item);
+	@WebMethod String processPurchaseOrder (Item item, int sequencerID);
 	/**
 	 * get ProductInfo
 	 * @param aProdName
+	 * @param sequencerID
 	 * @return Product
 	 */
-	@WebMethod Product getProductInfo (String aProdName);
+	@WebMethod Product getProductInfo (String aProdName, int sequencerID);
 	/**
 	 * Check payment received info
 	 * @param orderNum
 	 * @param totalPrice
+	 * @param sequencerID
 	 * @return boolean
 	 */
-	@WebMethod boolean receivePayment (String orderNum, float totalPrice);
+	@WebMethod boolean receivePayment (String orderNum, float totalPrice, int sequencerID);
 	/**
 	 * get product list
+	 * @param sequencerID
 	 * @return ProductList
 	 */
-	@WebMethod ProductList getProductList();
-	/**
-	 * get manufacturer name
-	 * @return String name
-	 */
-	@WebMethod String getName();
+	@WebMethod ProductList getProductList(int sequencerID);
 }

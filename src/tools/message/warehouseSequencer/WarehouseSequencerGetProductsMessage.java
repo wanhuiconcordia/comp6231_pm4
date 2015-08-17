@@ -1,4 +1,6 @@
-package tools.message.warehouse;
+package tools.message.warehouseSequencer;
+
+import tools.message.warehouseFE.WarehouseFEGetProductsMessage;
 
 public class WarehouseSequencerGetProductsMessage extends WarehouseFEGetProductsMessage{
 	public int sequencerID;

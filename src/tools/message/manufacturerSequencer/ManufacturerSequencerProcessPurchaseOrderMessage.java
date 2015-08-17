@@ -1,6 +1,7 @@
-package tools.message.manufacturer;
+package tools.message.manufacturerSequencer;
 
 import tools.Item;
+import tools.message.manufacturerFE.ManufacturerFEProcessPurchaseOrderMessage;
 
 public class ManufacturerSequencerProcessPurchaseOrderMessage extends ManufacturerFEProcessPurchaseOrderMessage{
 	public int sequencerID;

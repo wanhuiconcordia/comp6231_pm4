@@ -1,4 +1,6 @@
-package tools.message.manufacturer;
+package tools.message.manufacturerSequencer;
+
+import tools.message.manufacturerFE.ManufacturerFEReceivePaymentMessage;
 
 public class ManufacturerSequencerReceivePaymentMessage extends ManufacturerFEReceivePaymentMessage{
 	

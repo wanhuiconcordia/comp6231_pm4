@@ -1,4 +1,4 @@
-package tools.message.warehouse;
+package tools.message.warehouseFE;
 
 import tools.ItemList;
 import tools.message.Action;

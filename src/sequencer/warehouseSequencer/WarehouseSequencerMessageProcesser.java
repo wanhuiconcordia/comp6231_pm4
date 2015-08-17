@@ -8,17 +8,16 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
-
-import tools.message.warehouse.WarehouseFEGetProductsByIDMessage;
-import tools.message.warehouse.WarehouseFEGetProductsByRegisteredManufacturersMessage;
-import tools.message.warehouse.WarehouseFEGetProductsByTypeMessage;
-import tools.message.warehouse.WarehouseFEGetProductsMessage;
-import tools.message.warehouse.WarehouseFEShippingGoodsMessage;
-import tools.message.warehouse.WarehouseSequencerGetProductsByIDMessage;
-import tools.message.warehouse.WarehouseSequencerGetProductsByRegisteredManufacturersMessage;
-import tools.message.warehouse.WarehouseSequencerGetProductsByTypeMessage;
-import tools.message.warehouse.WarehouseSequencerGetProductsMessage;
-import tools.message.warehouse.WarehouseSequencerShippingGoodsMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByIDMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByTypeMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsMessage;
+import tools.message.warehouseFE.WarehouseFEShippingGoodsMessage;
+import tools.message.warehouseSequencer.WarehouseSequencerGetProductsByIDMessage;
+import tools.message.warehouseSequencer.WarehouseSequencerGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouseSequencer.WarehouseSequencerGetProductsByTypeMessage;
+import tools.message.warehouseSequencer.WarehouseSequencerGetProductsMessage;
+import tools.message.warehouseSequencer.WarehouseSequencerShippingGoodsMessage;
 
 public class WarehouseSequencerMessageProcesser extends MessageProcesser {
 

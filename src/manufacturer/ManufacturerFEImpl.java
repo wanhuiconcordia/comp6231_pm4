@@ -1,5 +1,7 @@
 package manufacturer;
 
+import javax.jws.WebService;
+
 import manufacturer.ManufacturerFEMessageProcesser;
 import tools.ConfigureManager;
 import tools.Item;
@@ -9,11 +11,15 @@ import tools.ProductList;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
-
-public class ManufacturerFEImpl implements ManufacturerInterface {
+import tools.fe.FE;
+import warehouse.WarehouseFEMessageProcesser;
+@WebService(endpointInterface = "manufacturer.ManufacturerInterface")
+public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 	public LoggerClient loggerClient;
 	public String name;
-	ChannelManager channelManager; 
+	public int currentSequencerID;
+	public Object cachedObj;
+	public Object lock = new Object();
 	
 	/**
 	 * Constructor
@@ -23,57 +29,54 @@ public class ManufacturerFEImpl implements ManufacturerInterface {
 	 */
 	public ManufacturerFEImpl(String name , LoggerClient loggerClient) throws Exception {
 		this.name = name;
+		String fullName = name + "FE";
 		this.loggerClient = loggerClient;
-		String host = ConfigureManager.getInstance().getString("ManufacturerFEHost");
-		int port = ConfigureManager.getInstance().getInt("ManufacturerFEPort");
-		System.out.println(name + " udp channel:" + host + ":" + port);
+		String host = ConfigureManager.getInstance().getString(fullName + "Host");
+		int port = ConfigureManager.getInstance().getInt(fullName + "Port");
+		System.out.println(fullName + " udp channel:" + host + ":" + port);
 
 		channelManager = new ChannelManager(port, loggerClient, new ManufacturerFEMessageProcesser());
 
-		host = ConfigureManager.getInstance().getString("ManufacturerSequencerHost");
-		port = ConfigureManager.getInstance().getInt("ManufacturerSequencerPort");
-		channelManager.addChannel(new Channel(name, "ManufacturerSequencer", host, port, Group.SEQUENCER));
+		host = ConfigureManager.getInstance().getString(name + "SequencerHost");
+		port = ConfigureManager.getInstance().getInt(name + "SequencerPort");
+		channelManager.addChannel(new Channel(name, name + "Sequencer", host, port, Group.SEQUENCER));
 
 		for(int i = 1; i <= 4; i++){
-			host = ConfigureManager.getInstance().getString("ManufacturerReplica" + i + "Host");
-			port = ConfigureManager.getInstance().getInt("ManufacturerReplica" + i + "Port");
-			channelManager.addChannel(new Channel(name, "ManufacturerReplica" + i, host, port, Group.REPLICA));
+			host = ConfigureManager.getInstance().getString(name + "Replica" + i + "Host");
+			port = ConfigureManager.getInstance().getInt(name + "Replica" + i + "Port");
+			channelManager.addChannel(new Channel(name, name + "Replica" + i, host, port, Group.REPLICA));
 
-			host = ConfigureManager.getInstance().getString("ManufacturerRM" + i + "Host");
-			port = ConfigureManager.getInstance().getInt("ManufacturerRM" + i + "Port");
-			channelManager.addChannel(new Channel(name, "ManufacturerRM" + i, host, port, Group.RM));
+			host = ConfigureManager.getInstance().getString(name + "RM" + i + "Host");
+			port = ConfigureManager.getInstance().getInt(name + "RM" + i + "Port");
+			channelManager.addChannel(new Channel(name, name + "RM" + i, host, port, Group.RM));
 		}
-
+		
 		channelManager.start();
 	}
+
 	@Override
-	public String processPurchaseOrder(Item item) {
+	public String processPurchaseOrder(Item item, int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Product getProductInfo(String aProdName) {
+	public Product getProductInfo(String aProdName, int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean receivePayment(String orderNum, float totalPrice) {
+	public boolean receivePayment(String orderNum, float totalPrice,
+			int sequencerID) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public ProductList getProductList() {
+	public ProductList getProductList(int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 }

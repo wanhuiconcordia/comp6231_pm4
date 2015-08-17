@@ -1,6 +1,7 @@
-package tools.message.warehouse;
+package tools.message.warehouseSequencer;
 
 import tools.ItemList;
+import tools.message.warehouseFE.WarehouseFEShippingGoodsMessage;
 
 public class WarehouseSequencerShippingGoodsMessage extends WarehouseFEShippingGoodsMessage{
 	

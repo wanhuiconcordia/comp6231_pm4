@@ -1,4 +1,4 @@
-package tools.message.warehouse;
+package tools.message.warehouseReplica;
 
 import tools.ItemList;
 import tools.message.Action;
@@ -13,6 +13,10 @@ public class WarehouseReplicaGetProductsByIDMessage extends Message implements R
 			, ItemList itemList) {
 		super(sender, senderSeq, receiverSeq, Action.getProductsByID);
 		this.itemList = itemList;
+	}
+	
+	public String toString(){
+		return super.toString() + ", " + itemList.toString();
 	}
 
 	@Override
@@ -31,5 +35,4 @@ public class WarehouseReplicaGetProductsByIDMessage extends Message implements R
 			}
 		}
 	} 
-
 }

@@ -27,22 +27,9 @@ public class RM {
 		System.out.println(name + index + " udp channel:" + host + ":" + port);
 		loggerClient.write(name + index + " udp channel:" + host + ":" + port);
 
-		MessageProcesser messageProcesser = null;
 		//String runReplicaCmd = "./start" + type + "Replica.sh";
-		
 		String runReplicaCmd = ConfigureManager.getInstance().getString("run" + type + "ReplicaCMD");
-		if(type.equals("Retailer")){
-			messageProcesser = new RMMessageProcesser(runReplicaCmd, index);
-		}else if(type.equals("Warehouse")){
-//			messageProcesser = new WarehouseRMMessageProcesser(runReplicaCmd, index);
-			throw new Exception("Not Implimented Replica type:" + type);
-		}else if(type.equals("Manufacturer")){
-//			messageProcesser = new ManufacturerRMMessageProcesser(runReplicaCmd, index);
-			throw new Exception("Not Implimented Replica type:" + type);
-		}else{
-			throw new Exception("Not supportted Replica type:" + type);
-		}
-		channelManager = new ChannelManager(port, loggerClient, messageProcesser);
+		channelManager = new ChannelManager(port, loggerClient, new RMMessageProcesser(runReplicaCmd, index));
 
 		for(int i = 1; i <= 4; i++){
 			if(i != index){

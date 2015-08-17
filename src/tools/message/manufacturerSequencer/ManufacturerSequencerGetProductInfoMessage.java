@@ -1,4 +1,6 @@
-package tools.message.manufacturer;
+package tools.message.manufacturerSequencer;
+
+import tools.message.manufacturerFE.ManufacturerFEGetProductInfoMessage;
 
 public class ManufacturerSequencerGetProductInfoMessage extends ManufacturerFEGetProductInfoMessage{
 	public int sequencerID;

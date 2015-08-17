@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 
 import javax.xml.ws.Endpoint;
 
-import retailer.RetailerFEImpl;
 import tools.ConfigureManager;
 import tools.LoggerClient;
 

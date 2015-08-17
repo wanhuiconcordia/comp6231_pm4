@@ -3,21 +3,15 @@ package sequencer.manufacturerSequencer;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
-import tools.message.AckMessage;
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
-import tools.message.manufacturer.ManufacturerFEGetNameMessage;
-import tools.message.manufacturer.ManufacturerFEGetProductInfoMessage;
-import tools.message.manufacturer.ManufacturerFEGetProductListMessage;
-import tools.message.manufacturer.ManufacturerFEProcessPurchaseOrderMessage;
-import tools.message.manufacturer.ManufacturerFEReceivePaymentMessage;
-import tools.message.manufacturer.ManufacturerSequencerGetNameMessage;
-import tools.message.manufacturer.ManufacturerSequencerGetProductInfoMessage;
-import tools.message.manufacturer.ManufacturerSequencerGetProductListMessage;
-import tools.message.manufacturer.ManufacturerSequencerProcessPurchaseOrderMessage;
-import tools.message.manufacturer.ManufacturerSequencerReceivePaymentMessage;
+import tools.message.manufacturerFE.ManufacturerFEProcessPurchaseOrderMessage;
+import tools.message.manufacturerFE.ManufacturerFEReceivePaymentMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerGetProductListMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerProcessPurchaseOrderMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerReceivePaymentMessage;
 
 
 public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
@@ -92,11 +86,6 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 	
 		case getProductList:
 			return  new ManufacturerSequencerGetProductListMessage(localProcessName
-					, localSeq
-					, peerSeq
-					, sequencerID); 
-		case getName:
-			return new ManufacturerSequencerGetNameMessage(localProcessName
 					, localSeq
 					, peerSeq
 					, sequencerID); 
