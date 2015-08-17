@@ -15,14 +15,14 @@ import tools.channel.Group;
 public class RetailerReplica {
 	String name;
 	int replicaIndex;
-	int goodReplicaIndex;	
+	int mode;	
 	ChannelManager channelManager; 
 	LoggerClient loggerClient;
 	public RetailerReplica(LoggerClient loggerClient, int replicaIndex, int mode) throws Exception{
 		String baseName = "RetailerReplica";
 		String name = baseName + replicaIndex;
 		this.replicaIndex = replicaIndex;
-		this.goodReplicaIndex = mode;
+		this.mode = mode;
 		this.loggerClient = loggerClient; 
 		loggerClient.write("index:" + replicaIndex + ", mode:" + mode);
 		String host = ConfigureManager.getInstance().getString("RetailerReplica" + replicaIndex + "Host");
@@ -57,20 +57,23 @@ public class RetailerReplica {
 
 	public static void main(String[] args) {
 		String baseName = "RetailerReplica";
-		String paraOptions = "Wrong parameters. 2 parameters are expected. Para 1 is for RetailerReplica index(1-4). Para 2 is for good replica index(0-4)";
+		String paraOptions = "Wrong parameters. 2 parameters are expected. Para 1 is for RetailerReplica index(1-4). Para 2 is for start mode(0-1)";
 		LoggerClient loggerClient = new LoggerClient(baseName);
 		if(args.length == 2){
 			try{
 				int index = Integer.parseInt(args[0]);
-				int goodReplicaIndex = Integer.parseInt(args[1]);
-				if(index > 0 && index < 5 && goodReplicaIndex >=0 && goodReplicaIndex < 5){
+				int mode = Integer.parseInt(args[1]);
+				if(index > 0 
+						&& index < 5 
+						&& (mode == 0 
+						|| mode == 1)){
 					String fullName = baseName + index;
 					loggerClient.setSenderName(fullName);
 					try {
 						String localIp = InetAddress.getLocalHost().getHostAddress();
 						String configHost = ConfigureManager.getInstance().getString(fullName + "Host");
 						if(localIp.equals(configHost)){
-							RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, goodReplicaIndex);
+							RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, mode);
 						}else{
 							System.out.println("Please run the " + fullName + " on:" 
 									+ configHost + " or change the " + fullName + "Host of configure file to:" + localIp);

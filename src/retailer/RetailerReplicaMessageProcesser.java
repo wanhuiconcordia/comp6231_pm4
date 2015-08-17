@@ -3,12 +3,12 @@ package retailer;
 import tools.SignUpResult;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
-import tools.message.AckMessage;
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
 import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
+import tools.message.rm.RMSyncMessage;
 
 public class RetailerReplicaMessageProcesser extends MessageProcesser {
 
@@ -19,12 +19,31 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 		}else{
 			channel.receivedMessage = msg;
 			switch(msg.action){
+			case askSync:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
+				
+				//response with data
+				break;
+			case doSync:
+				ackBack(channelManager, channel);
+				break;
+			case sync:
+				ackBack(channelManager, channel);
+				RMSyncMessage syncMsg = (RMSyncMessage)msg;
+				int goodIndex = syncMsg.goodReplicaIndex;
+				
+				//find good replica then send askSync
+				break;
 			case HEART_BEAT:
 				ackBack(channelManager, channel);
 				break;
 			case getCatelog:
+				//TODO real logic
 				break;
 			case signIn:
+				ackBack(channelManager, channel);
+				//TODO real logic
 				break;
 			case signUp:
 				ackBack(channelManager, channel);
@@ -53,10 +72,10 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 
 				break;
 			case submitOrder:
+				//TODO real logic
 				break;
 			default:
 				break;
-
 			}
 		}
 	}

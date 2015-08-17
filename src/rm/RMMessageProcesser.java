@@ -41,60 +41,61 @@ public class RMMessageProcesser extends MessageProcesser{
 			channel.isWaitingForRespose = false;
 		}else if(msg.action == Action.REPLICA_RESULT){
 			channel.receivedMessage = msg;
-			ackBack(channelManager, channel);
-			ReplicaResultMessage replicaResultMessage = (ReplicaResultMessage)msg;
-			switch(replicaResultMessage.replicaStatus){
-			case good:
-				failCount = 0;
-				break;
-			case fail:
-				failCount++;
-				if(failCount > 2){
-					try {
-						replicaProcess.destroy();
-						fullRunReplicaCmd = runReplicaCmd
-								+ " " + index 
-								+ " " + replicaResultMessage.goodReplicaIndex;
-						replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
-						failCount = 0;
-					} catch (IOException e) {
-						e.printStackTrace();
-					} 
-				}else{
-					for(Channel tmpChannel: channelManager.channelMap.values()){
-						if(tmpChannel.group == Group.REPLICA){
-							
-							tmpChannel.backupPacket = new Packet(tmpChannel.peerProcessName, tmpChannel.peerHost
-									, tmpChannel.peerPort
-									, new RMSyncMessage(tmpChannel.localProcessName
-											, ++tmpChannel.localSeq
-											, tmpChannel.peerSeq
-											, replicaResultMessage.goodReplicaIndex));
-							
-							tmpChannel.isWaitingForRespose = true;
-							synchronized(channelManager.outgoingPacketQueueLock) {
-								channelManager.outgoingPacketQueue.add(tmpChannel.backupPacket);
+			switch(msg.action){
+			case REPLICA_RESULT:
+				ReplicaResultMessage replicaResultMessage = (ReplicaResultMessage)msg;
+				switch(replicaResultMessage.replicaStatus){
+//				case good:
+//					failCount = 0;
+//					break;
+				case fail:
+					failCount++;
+					if(failCount > 2){
+						try {
+							replicaProcess.destroy();
+							fullRunReplicaCmd = runReplicaCmd
+									+ " " + index 
+									+ " 1";
+							replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
+							failCount = 0;
+						} catch (IOException e) {
+							e.printStackTrace();
+						} 
+					}else{
+						for(Channel tmpChannel: channelManager.channelMap.values()){
+							if(tmpChannel.group == Group.REPLICA){
+	
+								tmpChannel.backupPacket = new Packet(tmpChannel.peerProcessName, tmpChannel.peerHost
+										, tmpChannel.peerPort
+										, new RMSyncMessage(tmpChannel.localProcessName
+												, ++tmpChannel.localSeq
+												, tmpChannel.peerSeq
+												, replicaResultMessage.goodReplicaIndex));
+	
+								tmpChannel.isWaitingForRespose = true;
+								synchronized(channelManager.outgoingPacketQueueLock) {
+									channelManager.outgoingPacketQueue.add(tmpChannel.backupPacket);
+								}
+								break;
 							}
-							break;
 						}
 					}
+					break;			
+				default:
+					System.out.println("Unexpected result");
+					break;
 				}
 				break;
-			case noAnswer:
-				try {
-					replicaProcess.destroy();
-					fullRunReplicaCmd = runReplicaCmd
-							+ " " + index 
-							+ " " + replicaResultMessage.goodReplicaIndex;
-					replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
-					failCount = 0;
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			case INIT:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
 				break;
 			default:
+				System.out.println("Unrecognizable action");
 				break;
 			}
+			
+			ackBack(channelManager, channel);
 		}
 		else{
 			System.out.println("Unrecognizable action");
@@ -111,14 +112,12 @@ public class RMMessageProcesser extends MessageProcesser{
 						if(channel.group == Group.REPLICA){
 							//get a god replica
 							
-							System.out.println(channel.peerProcessName + " is dead will distroy it and create a new one.");
-							
-							int goodReplicaIndex = 0;
-							
+							System.out.println(channel.peerProcessName + " is dead. Distroy the old process.");
 							replicaProcess.destroy();
+							
 							fullRunReplicaCmd = runReplicaCmd
 									+ " " + index 
-									+ " " + goodReplicaIndex;
+									+ " 1";
 							try {
 								replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
 								failCount = 0;

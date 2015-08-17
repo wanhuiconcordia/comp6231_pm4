@@ -25,8 +25,6 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 			channel.isWaitingForRespose = false;
 		}else{
 			channel.receivedMessage = msg;
-			ackBack(channelManager, channel);
-
 			switch(msg.action){
 			case getCatelog:
 			case signIn:
@@ -51,10 +49,17 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 					}
 				}
 				break;
+			case INIT:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
+				break;
+
 			default:
 				System.out.println("Unrecognizable action");
 				break;
 			}
+			
+			ackBack(channelManager, channel);
 		}
 	}
 

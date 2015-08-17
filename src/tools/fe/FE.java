@@ -6,6 +6,7 @@ import rm.ReplicaStatus;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.message.Action;
 import tools.message.Packet;
 import tools.message.ReplicaResultMessage;
 import tools.message.ResultComparator;
@@ -34,40 +35,36 @@ public class FE {
 		int totalWaitingChannelCount = waitingReplicaChannelList.size();
 
 		ArrayList<Channel> answeredReplicaChannelList = new ArrayList<Channel>();
-		ArrayList<Channel> noAnswerReplicaChannelList = new ArrayList<Channel>();
+		ArrayList<Channel> crushedReplicaChannelList = new ArrayList<Channel>();
 
-		int timeCount = 60;
 		int interval = 50;
 		while(true){
 			for(Channel channel: waitingReplicaChannelList){
 				if(channel.receivedMessage != null){
-//					System.out.println(channel.peerProcessName + " answered with:" + channel.receivedMessage.toString());
-					answeredReplicaChannelList.add(channel);
+					if(channel.receivedMessage.action == Action.INIT){
+						crushedReplicaChannelList.add(channel);
+					}else{
+						answeredReplicaChannelList.add(channel);
+					}
 					waitingReplicaChannelList.remove(channel);
 					break;
 				}
 			}
-			
+
 			if(waitingReplicaChannelList.size() == 0){
 				break;
-			}
-			try {
-				Thread.sleep(interval);
-				timeCount--;
-				if(timeCount <= 0){
-					for(Channel channel: waitingReplicaChannelList){
-						noAnswerReplicaChannelList.add(channel);
-						System.out.println(channel.peerProcessName + " time out...");
-					}
-					break;
+			}else{
+				try {
+					Thread.sleep(interval);
+
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 		
 		
-		if(totalWaitingChannelCount >= noAnswerReplicaChannelList.size() * 3 + 1){
+		if(totalWaitingChannelCount >= crushedReplicaChannelList.size() * 3 + 1){
 			int majorIndex = -1;
 			int maxCount = 0;
 			ArrayList<ArrayList<Channel>> channelListList = new ArrayList<ArrayList<Channel>>();
@@ -111,7 +108,7 @@ public class FE {
 						}
 					}
 				}
-				return new ReplicaResponse(channelListList.get(majorIndex), failChannelList, noAnswerReplicaChannelList);
+				return new ReplicaResponse(channelListList.get(majorIndex), failChannelList, crushedReplicaChannelList);
 			}else{
 				System.out.println("**************very bad. Betray the assumption of (3f + 1). Too many failed replica");
 				return null;
@@ -126,22 +123,22 @@ public class FE {
 		String goodChannelProcessName = replicaResponse.goodReplicaChannelList.get(0).peerProcessName;
 		int goodReplicaIndex = goodChannelProcessName.charAt(goodChannelProcessName.length() - 1) - 48;
 		
-		for(Channel channel: replicaResponse.goodReplicaChannelList){
-			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
-			if(channelManager.channelMap.containsKey(rm_processName)){
-				Channel rmChannel = channelManager.channelMap.get(rm_processName);
-				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
-						, ++rmChannel.localSeq
-						, rmChannel.peerSeq
-						, ReplicaStatus.good
-						, goodReplicaIndex);
-				
-				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
-						, rmChannel.peerPort
-						, msg);
-				rmChannel.isWaitingForRespose = true;
-			}
-		}
+//		for(Channel channel: replicaResponse.goodReplicaChannelList){
+//			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
+//			if(channelManager.channelMap.containsKey(rm_processName)){
+//				Channel rmChannel = channelManager.channelMap.get(rm_processName);
+//				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
+//						, ++rmChannel.localSeq
+//						, rmChannel.peerSeq
+//						, ReplicaStatus.good
+//						, goodReplicaIndex);
+//				
+//				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
+//						, rmChannel.peerPort
+//						, msg);
+//				rmChannel.isWaitingForRespose = true;
+//			}
+//		}
 		
 		for(Channel channel: replicaResponse.failReplicaChannelList){
 			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
@@ -160,21 +157,21 @@ public class FE {
 			}
 		}
 		
-		for(Channel channel: replicaResponse.noAnswerReplicaChannelList){
-			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
-			if(channelManager.channelMap.containsKey(rm_processName)){
-				Channel rmChannel = channelManager.channelMap.get(rm_processName);
-				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
-						, ++rmChannel.localSeq
-						, rmChannel.peerSeq
-						, ReplicaStatus.noAnswer
-						, goodReplicaIndex);
-				
-				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
-						, rmChannel.peerPort
-						, msg);
-				rmChannel.isWaitingForRespose = true;
-			}
-		}
+//		for(Channel channel: replicaResponse.noAnswerReplicaChannelList){
+//			String rm_processName = channel.peerProcessName.replaceAll("Replica", "RM");
+//			if(channelManager.channelMap.containsKey(rm_processName)){
+//				Channel rmChannel = channelManager.channelMap.get(rm_processName);
+//				ReplicaResultMessage msg = new ReplicaResultMessage(rmChannel.localProcessName
+//						, ++rmChannel.localSeq
+//						, rmChannel.peerSeq
+//						, ReplicaStatus.noAnswer
+//						, goodReplicaIndex);
+//				
+//				rmChannel.backupPacket = new Packet(rmChannel.peerProcessName, rmChannel.peerHost
+//						, rmChannel.peerPort
+//						, msg);
+//				rmChannel.isWaitingForRespose = true;
+//			}
+//		}
 	}
 }

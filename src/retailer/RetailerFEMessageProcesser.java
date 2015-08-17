@@ -16,19 +16,25 @@ public class RetailerFEMessageProcesser extends MessageProcesser {
 		if(msg.action == Action.ACK){
 			channel.isWaitingForRespose = false;
 		}else{
-			ackBack(channelManager, channel);
+			channel.receivedMessage = msg;
+
 			switch(msg.action){
 			case getCatelog:
 			case signIn:
 			case signUp:
 			case submitOrder:
-				channel.receivedMessage = msg;
 				System.out.println(channel.peerProcessName + " message is saved in receivedMessage.");
+				break;
+			case INIT:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
 				break;
 			default:
 				System.out.println("Unrecognizable action");
 				break;
 			}
+			
+			ackBack(channelManager, channel);
 		}
 	}
 
