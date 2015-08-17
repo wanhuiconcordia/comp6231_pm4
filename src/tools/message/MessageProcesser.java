@@ -41,18 +41,19 @@ public abstract class MessageProcesser {
 	}
 	
 	public void processTimeout(ChannelManager channelManager) {
+		System.out.println("MessageProcesser::processTimeout() is called.");
 		for(Channel channel: channelManager.channelMap.values()){
 			if(channel.isWaitingForRespose){
 				channel.timeoutTimes++;
-				System.out.println(channel.peerProcessName + " channel.timeoutTimes:" + channel.timeoutTimes);
-				System.out.println("MessageProcesser::processTimeout() is called.");
-				if(channel.timeoutTimes > 5){
-					channel.isWaitingForRespose = false;
-				}else{
+				//System.out.println(channel.peerProcessName + " channel.timeoutTimes:" + channel.timeoutTimes);
+				
+//				if(channel.timeoutTimes > 5){
+//					channel.isWaitingForRespose = false;
+//				}else{
 					synchronized(channelManager.outgoingPacketQueueLock) {
 						channelManager.outgoingPacketQueue.add(channel.backupPacket);
 					}
-				}
+//				}
 			}
 		}
 	}

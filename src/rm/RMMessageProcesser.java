@@ -11,6 +11,7 @@ import tools.message.ReplicaResultMessage;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
+import tools.message.rm.HeartBeatMessage;
 import tools.message.rm.RMSyncMessage;
 
 public class RMMessageProcesser extends MessageProcesser{
@@ -22,7 +23,8 @@ public class RMMessageProcesser extends MessageProcesser{
 	public RMMessageProcesser(String runReplicaCmd, int index){
 		this.runReplicaCmd = runReplicaCmd;
 		this.index = index;
-		fullRunReplicaCmd = runReplicaCmd + " " + index + " 0"; 
+		fullRunReplicaCmd = runReplicaCmd + " " + index + " 0";
+		System.out.println(fullRunReplicaCmd);
 		try {
 			replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
 		} catch (IOException e) {
@@ -96,6 +98,59 @@ public class RMMessageProcesser extends MessageProcesser{
 		}
 		else{
 			System.out.println("Unrecognizable action");
+		}
+	}
+	
+	public void processTimeout(ChannelManager channelManager) {
+			for(Channel channel: channelManager.channelMap.values()){
+				if(channel.isWaitingForRespose){
+					channel.timeoutTimes++;
+					if(channel.timeoutTimes > 3){
+						channel.isWaitingForRespose = false;
+						
+						if(channel.group == Group.REPLICA){
+							//get a god replica
+							
+							System.out.println(channel.peerProcessName + " is dead will distroy it and create a new one.");
+							
+							int goodReplicaIndex = 0;
+							
+							replicaProcess.destroy();
+							fullRunReplicaCmd = runReplicaCmd
+									+ " " + index 
+									+ " " + goodReplicaIndex;
+							try {
+								replicaProcess = Runtime.getRuntime().exec(fullRunReplicaCmd);
+								failCount = 0;
+								channel.timeoutTimes = 0;
+								channel.localSeq = 0;
+								channel.peerSeq = 0;
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							
+						}
+					}else{
+						synchronized(channelManager.outgoingPacketQueueLock) {
+							channelManager.outgoingPacketQueue.add(channel.backupPacket);
+						}
+					}
+				}else{
+					if(channel.group == Group.REPLICA){
+						sendHeartBeat(channelManager, channel);
+					}
+				}
+			}
+	}
+	
+	public void sendHeartBeat(ChannelManager channelManager, Channel channel){
+		Message outGoingMsg = new HeartBeatMessage(channel.localProcessName
+				, ++channel.localSeq
+				, channel.peerSeq);
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost,  channel.peerPort, outGoingMsg); 
+		channel.isWaitingForRespose = true;
+		synchronized (channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
 		}
 	}
 }

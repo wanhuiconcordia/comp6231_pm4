@@ -16,15 +16,14 @@ public class RetailerFEMessageProcesser extends MessageProcesser {
 		if(msg.action == Action.ACK){
 			channel.isWaitingForRespose = false;
 		}else{
-			channel.receivedMessage = msg;
-			System.out.println(channel.peerProcessName + " message is saved in receivedMessage.");
 			ackBack(channelManager, channel);
-
 			switch(msg.action){
 			case getCatelog:
 			case signIn:
 			case signUp:
 			case submitOrder:
+				channel.receivedMessage = msg;
+				System.out.println(channel.peerProcessName + " message is saved in receivedMessage.");
 				break;
 			default:
 				System.out.println("Unrecognizable action");

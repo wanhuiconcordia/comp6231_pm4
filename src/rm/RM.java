@@ -30,14 +30,13 @@ public class RM {
 		//String runReplicaCmd = "./start" + type + "Replica.sh";
 		String runReplicaCmd = ConfigureManager.getInstance().getString("run" + type + "ReplicaCMD");
 		channelManager = new ChannelManager(port, loggerClient, new RMMessageProcesser(runReplicaCmd, index));
-
-		for(int i = 1; i <= 4; i++){
-			if(i != index){
-				host = ConfigureManager.getInstance().getString(name + i + "Host");
-				port = ConfigureManager.getInstance().getInt(name + i + "Port");
-				channelManager.addChannel(new Channel(name + index, name + i, host, port, Group.RM));
-			}
-		}
+//		for(int i = 1; i <= 4; i++){
+//			if(i != index){
+//				host = ConfigureManager.getInstance().getString(name + i + "Host");
+//				port = ConfigureManager.getInstance().getInt(name + i + "Port");
+//				channelManager.addChannel(new Channel(name + index, name + i, host, port, Group.RM));
+//			}
+//		}
 
 		host = ConfigureManager.getInstance().getString(type + "FEHost");
 		port = ConfigureManager.getInstance().getInt(type + "FEPort");
@@ -62,10 +61,11 @@ public class RM {
 				+ "Manufacturer2,"
 				+ "Manufacturer3";
 		String indexOptions = "para2 options: 1,2,3,4";
-				
 		LoggerClient loggerClient = new LoggerClient(name);
+
 		if(args.length == 2){
 			String type = args[0];
+			
 			try{
 				int index = Integer.parseInt(args[1]); 
 				if(index > 0 && index < 5){

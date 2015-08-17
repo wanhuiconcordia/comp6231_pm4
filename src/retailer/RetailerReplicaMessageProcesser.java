@@ -19,6 +19,9 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 		}else{
 			channel.receivedMessage = msg;
 			switch(msg.action){
+			case HEART_BEAT:
+				ackBack(channelManager, channel);
+				break;
 			case getCatelog:
 				break;
 			case signIn:
