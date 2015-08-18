@@ -41,7 +41,7 @@ public class RMMessageProcesser extends MessageProcesser{
 
 		if(msg.action == Action.ACK){
 			channel.isWaitingForRespose = false;
-			System.out.println("On ack Lseq:" + channel.localSeq + ", Pseq:" + channel.peerSeq);
+			//System.out.println("On ack Lseq:" + channel.localSeq + ", Pseq:" + channel.peerSeq);
 		}else if(msg.action == Action.REPLICA_RESULT){
 			channel.receivedMessage = msg;
 			switch(msg.action){
@@ -129,17 +129,17 @@ public class RMMessageProcesser extends MessageProcesser{
 	public void processTimeout(ChannelManager channelManager) {
 		for(Channel channel: channelManager.channelMap.values()){
 			if(channel.group == Group.REPLICA){
-				if(channel.timeoutTimes < 10){
+				if(channel.timeoutTimes < 5){
 					channel.timeoutTimes++;
 					if(channel.isWaitingForRespose){
-						synchronized(channelManager.outgoingPacketQueueLock) {
-							channelManager.outgoingPacketQueue.add(channel.backupPacket);
-						}
+//						synchronized(channelManager.outgoingPacketQueueLock) {
+//							channelManager.outgoingPacketQueue.add(channel.backupPacket);
+//						}
 					}else{
 						sendHeartBeat(channelManager, channel);
 					}
 				}
-				else if(channel.timeoutTimes == 10){
+				else if(channel.timeoutTimes == 5){
 					channel.timeoutTimes++;
 					channel.isWaitingForRespose = false;
 					if(channel.group == Group.REPLICA){
@@ -171,8 +171,11 @@ public class RMMessageProcesser extends MessageProcesser{
 		Message outGoingMsg = new HeartBeatMessage(channel.localProcessName
 				, ++channel.localSeq
 				, channel.peerSeq);
-		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost,  channel.peerPort, outGoingMsg); 
-		channel.isWaitingForRespose = true;
+		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost,  channel.peerPort, outGoingMsg);
+		synchronized(channelManager.outgoingPacketQueueLock) {
+			channelManager.outgoingPacketQueue.add(channel.backupPacket);
+		}
+//		channel.isWaitingForRespose = true;
 	}
 
 	@Override

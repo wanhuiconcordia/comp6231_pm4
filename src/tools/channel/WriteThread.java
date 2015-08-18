@@ -1,5 +1,6 @@
 package tools.channel;
 
+import tools.message.Action;
 import tools.message.Packet;
 
 public class WriteThread extends Thread {
@@ -20,7 +21,10 @@ public class WriteThread extends Thread {
 					packet = channelManager.outgoingPacketQueue.remove();
 				}
 				if(packet != null){
-					System.out.println("Send packet:" + packet.toString());
+					if(!(packet.msg.action == Action.ACK || packet.msg.action == Action.HEART_BEAT)){
+						System.out.println("Send packet:" + packet.toString());
+						channelManager.loggerClient.write(packet.toString());	
+					}
 					networkIO.sendMsg(packet.msg, packet.receiverHost, packet.receiverPort);
 				}
 			}

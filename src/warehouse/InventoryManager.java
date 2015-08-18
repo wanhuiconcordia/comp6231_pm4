@@ -25,8 +25,6 @@ public class InventoryManager {
 		
 		inventoryItemMap = new HashMap<String, Item>();
 		this.warehouseName = name;
-		loadItems();
-		
 	}
 	/**
 	 * Load items from an XML file to the inventoryItemMap

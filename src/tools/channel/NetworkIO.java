@@ -40,7 +40,7 @@ public class NetworkIO {
 
 			msg = (Message) is.readObject();
 
-			System.out.println("Receive msg:" + msg);
+//			System.out.println("Receive msg:" + msg);
 			//packet.peerPort = incomingPacket.getPort();
 			return msg;
 		}catch(java.net.SocketTimeoutException e){

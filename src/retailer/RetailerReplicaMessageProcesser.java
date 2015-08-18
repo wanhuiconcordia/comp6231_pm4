@@ -141,6 +141,8 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 				RetailerSequencerGetCatelogMessage getCatalogMsg = (RetailerSequencerGetCatelogMessage)msg;
 				ItemList itemList = new ItemList();
 				HashMap<String, Item> itemsMap = new HashMap<String, Item>();
+				
+				retailerReplica.loggerClient.write("called get products");
 
 				for(int i = 0; i < retailerReplica.warehouseFEList.size(); i++){
 					ItemList itemListFromWarehouse = retailerReplica.warehouseFEList.get(i).getProductsByID("", getCatalogMsg.sequencerID);

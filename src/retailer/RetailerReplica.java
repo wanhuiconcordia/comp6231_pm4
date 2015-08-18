@@ -27,7 +27,7 @@ public class RetailerReplica {
 	public ChannelManager channelManager; 
 	public LoggerClient loggerClient;
 	
-	public ArrayList<WarehouseInterface> warehouseFEList;
+	public ArrayList<WarehouseInterface> warehouseFEList = new ArrayList<WarehouseInterface>();
 	public CustomerManager customerManager;
 	
 	public RetailerReplica(LoggerClient loggerClient, int replicaIndex, int mode, String goodReplicaName) throws Exception{
@@ -94,9 +94,10 @@ public class RetailerReplica {
 		}
 	}
 
-	public boolean connectWarehouseFE(){
+	public boolean connectWarehouseFE() throws Exception{
+		int copies = ConfigureManager.getInstance().getInt("copies");
 		try {		
-			for(int i = 1; i<= 3; i++){
+			for(int i = 1; i<= copies; i++){
 				String warehouseFEHost = ConfigureManager.getInstance().getString("Warehouse" + i + "FEHost");
 				String warehouseFEServicePort = ConfigureManager.getInstance().getString("Warehouse" + i + "FEServicePort");
 				URL url = new URL("http://" + warehouseFEHost + ":" + warehouseFEServicePort + "/ws/Warehouse" + i + "FE?wsdl");

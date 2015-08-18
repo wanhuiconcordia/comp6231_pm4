@@ -88,7 +88,7 @@ public class ManufacturerReplicaMessageProcesser extends MessageProcesser{
 					Message responsMsg = new ManufacturerReplicaProcessPurchaseOrderMessage(FEChannel.localProcessName
 							, ++FEChannel.localSeq
 							, FEChannel.peerSeq
-							, manufacturerReplica.processPurchaseOrder(processPurchaseMsg.item));
+							, manufacturerReplica.processPurchaseOrder(processPurchaseMsg.itemList));
 					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
 					FEChannel.isWaitingForRespose = true;
 				}

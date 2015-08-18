@@ -74,13 +74,13 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 			return new ManufacturerSequencerProcessPurchaseOrderMessage(localProcessName
 					, localSeq
 					, peerSeq
-					, ((ManufacturerFEProcessPurchaseOrderMessage)receivedMsg).item
+					, ((ManufacturerFEProcessPurchaseOrderMessage)receivedMsg).itemList
 					, sequencerID); 
 		case getProductInfo:
 			return new ManufacturerSequencerProcessPurchaseOrderMessage(localProcessName
 					, localSeq
 					, peerSeq
-					, ((ManufacturerFEProcessPurchaseOrderMessage)receivedMsg).item
+					, ((ManufacturerFEProcessPurchaseOrderMessage)receivedMsg).itemList
 					, sequencerID); 
 		case receivePayment:
 			return new ManufacturerSequencerReceivePaymentMessage(localProcessName

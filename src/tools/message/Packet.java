@@ -13,6 +13,7 @@ public class Packet {
 	}
 	
 	public String toString(){
-		return receiver + ", " + receiverHost + ":" + receiverPort + ", " + msg.toString();
+		return "receiver:" + receiver 
+				+ "(" + receiverHost + ":" + receiverPort + "), " + msg.toString();
 	}
 }

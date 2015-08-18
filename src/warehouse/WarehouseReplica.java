@@ -1,11 +1,20 @@
 package warehouse;
 
 import java.net.InetAddress;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+
+import manufacturer.ManufacturerInterface;
+import retailer.RetailerInterface;
 import tools.ConfigureManager;
 import tools.Item;
 import tools.LoggerClient;
+import tools.Product;
+import tools.ProductList;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
@@ -26,7 +35,7 @@ public class WarehouseReplica {
 	public ChannelManager channelManager; 
 	public LoggerClient loggerClient;
 	public InventoryManager inventoryManager;
-
+	public ArrayList<ManufacturerInterface> manufacturerFEList = new ArrayList<ManufacturerInterface>();
 	
 	public WarehouseReplica(LoggerClient loggerClient 
 			, String baseName
@@ -75,6 +84,8 @@ public class WarehouseReplica {
 		
 		channelManager.start();
 		
+		inventoryManager= new InventoryManager(fullName);		
+		
 		if(mode == 1){
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RM){
@@ -100,11 +111,26 @@ public class WarehouseReplica {
 				}
 			}
 		}
-		
-		
-		
-		
 	}
+	
+	public boolean connectManufacturerFE(){
+		try {		
+			int copies = ConfigureManager.getInstance().getInt("copies");
+			for(int i = 1; i<= copies; i++){
+				String manufactuerFEHost = ConfigureManager.getInstance().getString("Manufacturer" + i + "FEHost");
+				String manufacturerFEServicePort = ConfigureManager.getInstance().getString("Manufacturer" + i + "FEServicePort");
+				URL url = new URL("http://" + manufactuerFEHost + ":" + manufacturerFEServicePort + "/ws/Manufacturer" + i + "FE?wsdl");
+				QName qname = new QName("http://manufacturer/", "ManufacturerFEImplService");
+				Service service = Service.create(url, qname);
+				manufacturerFEList.add(service.getPort(ManufacturerInterface.class));
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	public static void main(String[] args) {
 		String baseName = "Warehouse";
 		String extraName = "Replica";
@@ -134,13 +160,18 @@ public class WarehouseReplica {
 						String localIp = InetAddress.getLocalHost().getHostAddress();
 						String configHost = ConfigureManager.getInstance().getString(fullName + "Host");
 						if(localIp.equals(configHost)){
-							WarehouseReplica retailerReplica = new WarehouseReplica(loggerClient
+							WarehouseReplica warehouseReplica = new WarehouseReplica(loggerClient
 									, baseName
 									, extraName
 									, warehouseIndex
 									, replicaIndex
 									, mode
 									, goodReplicaName);
+							if(!warehouseReplica.connectManufacturerFE()){
+								System.out.println("Failed to connect warehouseFEs");
+								loggerClient.write("Failed to connect warehouseFEs");
+								return;
+							}
 						}else{
 							System.out.println("Please run the " + fullName + " on:" 
 									+ configHost + " or change the " + fullName + "Host of configure file to:" + localIp);

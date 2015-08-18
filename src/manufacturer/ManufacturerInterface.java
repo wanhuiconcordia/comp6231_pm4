@@ -25,7 +25,7 @@ public interface ManufacturerInterface {
 	 * @param sequencerID
 	 * @return OrderNo
 	 */
-	@WebMethod String processPurchaseOrder (Item item, int sequencerID);
+	@WebMethod boolean processPurchaseOrder (ItemList itemList, int sequencerID);
 	/**
 	 * get ProductInfo
 	 * @param aProdName

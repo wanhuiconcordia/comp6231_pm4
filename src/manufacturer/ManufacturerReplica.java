@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import tools.ConfigureManager;
 import tools.Item;
+import tools.ItemList;
 import tools.LoggerClient;
 import tools.Product;
 import tools.ProductList;
@@ -17,7 +18,7 @@ import tools.message.replica.AskInitSyncMessage;
 import tools.message.replica.InitMessage;
 
 public class ManufacturerReplica {
-	
+
 	public String baseName;
 	public String extraName;
 	public String fullName;
@@ -28,11 +29,11 @@ public class ManufacturerReplica {
 	public ChannelManager channelManager; 
 	public LoggerClient loggerClient;
 
-	
+
 	public HashMap<String, Item> purchaseOrderMap;
 	private int orderNum;
 	public PurchaseOrderManager purchaseOrderManager;
-	
+
 	public ManufacturerReplica(LoggerClient loggerClient 
 			, String baseName
 			, String extraName
@@ -48,15 +49,15 @@ public class ManufacturerReplica {
 		this.mode = mode;
 		this.fullName = baseName + manufacturerIndex + extraName + replicaIndex;
 		this.goodReplicaName = goodReplicaName;
-		
+
 		String host = ConfigureManager.getInstance().getString(fullName + "Host");
 		int port = ConfigureManager.getInstance().getInt(fullName + "Port");
 		System.out.println(fullName + " udp channel:" + host + ":" + port);
 		loggerClient.write(fullName + " udp channel:" + host + ":" + port);
-		
+
 		ChannelManager channelManager = new ChannelManager(port, loggerClient, new ManufacturerReplicaMessageProcesser(this));
-		
-		
+
+
 		for(int i = 1; i <= 4; i++){
 			if(i != replicaIndex){
 				host = ConfigureManager.getInstance().getString(baseName + manufacturerIndex + extraName + i + "Host");
@@ -68,7 +69,7 @@ public class ManufacturerReplica {
 		host = ConfigureManager.getInstance().getString(baseName + manufacturerIndex + "SequencerHost");
 		port = ConfigureManager.getInstance().getInt(baseName + manufacturerIndex + "SequencerPort");
 		channelManager.addChannel(new Channel(fullName, baseName + manufacturerIndex + "Sequencer", host, port, Group.SEQUENCER));
-		
+
 		host = ConfigureManager.getInstance().getString(baseName + manufacturerIndex + "RM" + replicaIndex + "Host");
 		port = ConfigureManager.getInstance().getInt(baseName + manufacturerIndex + "RM" + replicaIndex + "Port");
 		channelManager.addChannel(new Channel(fullName, baseName + manufacturerIndex + "RM" + replicaIndex, host, port , Group.RM));
@@ -77,19 +78,19 @@ public class ManufacturerReplica {
 		port = ConfigureManager.getInstance().getInt(baseName + manufacturerIndex + "FEPort");
 		channelManager.addChannel(new Channel(fullName, baseName + manufacturerIndex + "FE", host, port, Group.FE));
 
-		
+
 		channelManager.start();
-		
+
 		purchaseOrderMap = new HashMap<String, Item>();
 		orderNum = 1000;
 		purchaseOrderManager = new PurchaseOrderManager(baseName + manufacturerIndex, fullName);
-		
+
 		if(mode == 1){
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RM){
 					//DO NOTHING
 				}else if(channel.group == Group.REPLICA
-					&& channel.peerProcessName.equals(goodReplicaName)){
+						&& channel.peerProcessName.equals(goodReplicaName)){
 					Message msg = new AskInitSyncMessage(channel.localProcessName
 							, ++channel.localSeq
 							, channel.peerSeq);
@@ -99,8 +100,8 @@ public class ManufacturerReplica {
 					channel.isWaitingForRespose = true;
 				}else{
 					Message msg = new InitMessage(channel.localProcessName
-									, ++channel.localSeq
-									, channel.peerSeq);
+							, ++channel.localSeq
+							, channel.peerSeq);
 					channel.backupPacket = new Packet(channel.peerProcessName
 							, channel.peerHost
 							, channel.peerPort
@@ -109,12 +110,12 @@ public class ManufacturerReplica {
 				}
 			}
 		}
-		
-		
-		
-		
+
+
+
+
 	}
-	
+
 	/**
 	 * Simulate real produce.
 	 * @param productName
@@ -125,40 +126,43 @@ public class ManufacturerReplica {
 		return true;
 	}
 
-	public String processPurchaseOrder(Item purchaseItem) {
+	public boolean processPurchaseOrder(ItemList purchaseItems) {
 		System.out.println("processPurchaseOrder is called...");
-		if(!purchaseItem.manufacturerName.equals(fullName)){
-			return null;
-		}		
-		Item availableItem = purchaseOrderManager.itemsMap.get(purchaseItem.productType);
-		if(availableItem == null){
-			return null;
-		}else{
-			if(purchaseItem.unitPrice < availableItem.unitPrice){
-				return null;
+		for(Item purchaseItem: purchaseItems.innerItemList ){
+			if(!purchaseItem.manufacturerName.equals(fullName)){
+				return false;
+			}		
+			Item availableItem = purchaseOrderManager.itemsMap.get(purchaseItem.productType);
+			if(availableItem == null){
+				return false;
 			}else{
-				if(purchaseItem.quantity >= availableItem.quantity){
-					int oneTimeQuantity = 100;
-					if(produce(purchaseItem.productType, oneTimeQuantity)){
-						availableItem.quantity =availableItem.quantity + oneTimeQuantity;
-						purchaseOrderManager.saveItems();
-						
-					}else{
-						return null;
-					}
-				}
-				
-				if(purchaseItem.quantity >= availableItem.quantity){
-					return null;
+				if(purchaseItem.unitPrice < availableItem.unitPrice){
+					return false;
 				}else{
-					String orderNumString = new Integer(orderNum++).toString();
-					purchaseOrderMap.put(orderNumString, purchaseItem);
-					return orderNumString;
+					if(purchaseItem.quantity >= availableItem.quantity){
+						int oneTimeQuantity = 100;
+						if(produce(purchaseItem.productType, oneTimeQuantity)){
+							availableItem.quantity =availableItem.quantity + oneTimeQuantity;
+							purchaseOrderManager.saveItems();
+
+						}else{
+							return false;
+						}
+					}
+
+					if(purchaseItem.quantity >= availableItem.quantity){
+						return false;
+					}else{
+						String orderNumString = new Integer(orderNum++).toString();
+						purchaseOrderMap.put(orderNumString, purchaseItem);
+						return true;
+					}
 				}
 			}
 		}
+		return true;
 	}
-	
+
 	public Product getProductInfo(String productType){
 		Item avaiableItem = purchaseOrderManager.itemsMap.get(productType);
 		if(avaiableItem == null){
@@ -167,7 +171,7 @@ public class ManufacturerReplica {
 			return new Product(avaiableItem.manufacturerName, avaiableItem.productType, avaiableItem.unitPrice);
 		}
 	}
-	
+
 	public boolean receivePayment(String orderNum, float totalPrice){
 		Item waitingForPayItem = purchaseOrderMap.get(orderNum);
 		if(waitingForPayItem == null){
@@ -184,7 +188,7 @@ public class ManufacturerReplica {
 			}
 		}
 	}
-	
+
 
 	public ProductList getProductList(){
 		ProductList productList= new ProductList();
@@ -193,7 +197,7 @@ public class ManufacturerReplica {
 		}		
 		return productList;		
 	}
-	
+
 	public static void main(String[] args) {
 		String baseName = "Manufacturer";
 		String extraName = "Replica";
@@ -210,7 +214,7 @@ public class ManufacturerReplica {
 				int replicaIndex = Integer.parseInt(args[1]);
 				int mode = Integer.parseInt(args[2]);
 				String goodReplicaName = args[3];
-				
+
 				if(manufacturerIndex > 0 
 						&& manufacturerIndex < 4 
 						&& replicaIndex > 0 
@@ -223,7 +227,7 @@ public class ManufacturerReplica {
 						String localIp = InetAddress.getLocalHost().getHostAddress();
 						String configHost = ConfigureManager.getInstance().getString(fullName + "Host");
 						if(localIp.equals(configHost)){
-							ManufacturerReplica retailerReplica = new ManufacturerReplica(loggerClient
+							ManufacturerReplica manufacturerReplica = new ManufacturerReplica(loggerClient
 									, baseName
 									, extraName
 									, manufacturerIndex
@@ -245,7 +249,7 @@ public class ManufacturerReplica {
 					System.out.println(paraOptions);
 					loggerClient.write(paraOptions);	
 				}
-				
+
 			}catch(NumberFormatException e){
 				System.out.println(paraOptions);
 				loggerClient.write(paraOptions);
