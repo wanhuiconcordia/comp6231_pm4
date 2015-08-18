@@ -17,9 +17,9 @@ import tools.XmlFileController;
  * @author comp6231.team5
  * Maintain customers
  */
-public class CustomerManager {
+public class CustomerManager{
 
-	private ArrayList<Customer> customers;
+	public ArrayList<Customer> customers;
 
 	private String fileName;
 

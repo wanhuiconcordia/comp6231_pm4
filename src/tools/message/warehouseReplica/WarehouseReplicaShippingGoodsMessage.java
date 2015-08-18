@@ -5,10 +5,10 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.ResultComparator;
 
-public class WarehouseFEShippingGoodsMessage extends Message implements ResultComparator<WarehouseFEShippingGoodsMessage>{
+public class WarehouseReplicaShippingGoodsMessage extends Message implements ResultComparator<WarehouseReplicaShippingGoodsMessage>{
 	public ItemList itemList;
 
-	public WarehouseFEShippingGoodsMessage(String sender, int senderSeq
+	public WarehouseReplicaShippingGoodsMessage(String sender, int senderSeq
 			, int receiverSeq
 			, ItemList itemList) {
 		super(sender, senderSeq, receiverSeq, Action.getProductsByID);
@@ -20,7 +20,7 @@ public class WarehouseFEShippingGoodsMessage extends Message implements ResultCo
 	}
 
 	@Override
-	public boolean hasSameResult(WarehouseFEShippingGoodsMessage other) {
+	public boolean hasSameResult(WarehouseReplicaShippingGoodsMessage other) {
 		if(itemList == null){
 			if(other.itemList == null){
 				return true;

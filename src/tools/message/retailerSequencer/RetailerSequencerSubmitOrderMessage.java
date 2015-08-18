@@ -6,8 +6,8 @@ import tools.message.retailerFE.RetailerFESubmitOrderMessage;
 public class RetailerSequencerSubmitOrderMessage extends
 		RetailerFESubmitOrderMessage {
 
-	int sequencerID;
-	ItemList itemList;
+	public int sequencerID;
+	public ItemList itemList;
 	public RetailerSequencerSubmitOrderMessage(String sender
 			, int senderSeq
 			, int receiverSeq

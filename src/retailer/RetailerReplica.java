@@ -1,6 +1,12 @@
 package retailer;
 
 import java.net.InetAddress;
+import java.net.URL;
+import java.util.ArrayList;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+
 import tools.ConfigureManager;
 import tools.LoggerClient;
 import tools.channel.Channel;
@@ -10,14 +16,19 @@ import tools.message.Message;
 import tools.message.Packet;
 import tools.message.replica.AskSyncMessage;
 import tools.message.replica.InitMessage;
+import warehouse.WarehouseInterface;
 
 public class RetailerReplica {
-	String baseName;
-	String fullName;
-	int replicaIndex;
-	int mode;	
-	ChannelManager channelManager; 
-	LoggerClient loggerClient;
+	public String baseName;
+	public String fullName;
+	public int replicaIndex;
+	public int mode;	
+	public ChannelManager channelManager; 
+	public LoggerClient loggerClient;
+	
+	public ArrayList<WarehouseInterface> warehouseFEList;
+	public CustomerManager customerManager;
+	
 	public RetailerReplica(LoggerClient loggerClient, int replicaIndex, int mode, String goodReplicaName) throws Exception{
 		baseName = "RetailerReplica";
 		fullName = baseName + replicaIndex;
@@ -30,7 +41,7 @@ public class RetailerReplica {
 		System.out.println(fullName + " udp channel:" + host + ":" + port);
 		loggerClient.write(fullName + " udp channel:" + host + ":" + port);
 
-		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerReplicaMessageProcesser());
+		ChannelManager channelManager = new ChannelManager(port, loggerClient, new RetailerReplicaMessageProcesser(this));
 
 		for(int i = 1; i <= 4; i++){
 			if(i != replicaIndex){
@@ -52,6 +63,8 @@ public class RetailerReplica {
 		port = ConfigureManager.getInstance().getInt("RetailerFEPort");
 		channelManager.addChannel(new Channel(fullName, "RetailerFE", host, port, Group.FE));
 
+		customerManager = new CustomerManager(fullName + "Customers.xml");
+		
 		channelManager.start();
 		
 		if(mode == 1){
@@ -81,6 +94,23 @@ public class RetailerReplica {
 		}
 	}
 
+	public boolean connectWarehouseFE(){
+		try {		
+			for(int i = 1; i<= 3; i++){
+				String warehouseFEHost = ConfigureManager.getInstance().getString("Warehouse" + i + "FEHost");
+				String warehouseFEServicePort = ConfigureManager.getInstance().getString("Warehouse" + i + "FEServicePort");
+				URL url = new URL("http://" + warehouseFEHost + ":" + warehouseFEServicePort + "/ws/Warehouse" + i + "FE?wsdl");
+				QName qname = new QName("http://warehouse/", "WarehouseFEImplService");
+				Service service = Service.create(url, qname);
+				warehouseFEList.add(service.getPort(WarehouseInterface.class));
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	public static void main(String[] args) {
 		String baseName = "RetailerReplica";
 		String paraOptions = "Wrong parameters. 3 parameters are expected. Para 1 is for RetailerReplica index(1-4). Para 2 is for start mode(0-1). Para 3 is for goodReplicaName.";
@@ -101,6 +131,11 @@ public class RetailerReplica {
 						String configHost = ConfigureManager.getInstance().getString(fullName + "Host");
 						if(localIp.equals(configHost)){
 							RetailerReplica retailerReplica = new RetailerReplica(loggerClient, index, mode, goodReplicaName);
+							if(!retailerReplica.connectWarehouseFE()){
+								System.out.println("Failed to connect warehouseFEs");
+								loggerClient.write("Failed to connect warehouseFEs");
+								return;
+							}
 						}else{
 							System.out.println("Please run the " + fullName + " on:" 
 									+ configHost + " or change the " + fullName + "Host of configure file to:" + localIp);
@@ -127,3 +162,4 @@ public class RetailerReplica {
 		}
 	}
 }
+
