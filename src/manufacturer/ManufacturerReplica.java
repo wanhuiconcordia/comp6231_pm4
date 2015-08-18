@@ -6,6 +6,8 @@ import java.util.HashMap;
 import tools.ConfigureManager;
 import tools.Item;
 import tools.LoggerClient;
+import tools.Product;
+import tools.ProductList;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
@@ -29,7 +31,7 @@ public class ManufacturerReplica {
 	
 	public HashMap<String, Item> purchaseOrderMap;
 	private int orderNum;
-	private PurchaseOrderManager purchaseOrderManager;
+	public PurchaseOrderManager purchaseOrderManager;
 	
 	public ManufacturerReplica(LoggerClient loggerClient 
 			, String baseName
@@ -78,6 +80,10 @@ public class ManufacturerReplica {
 		
 		channelManager.start();
 		
+		purchaseOrderMap = new HashMap<String, Item>();
+		orderNum = 1000;
+		purchaseOrderManager = new PurchaseOrderManager(fullName);
+		
 		if(mode == 1){
 			for(Channel channel: channelManager.channelMap.values()){
 				if(channel.group == Group.RM){
@@ -108,6 +114,86 @@ public class ManufacturerReplica {
 		
 		
 	}
+	
+	/**
+	 * Simulate real produce.
+	 * @param productName
+	 * @param quantity
+	 * @return
+	 */
+	private boolean produce(String productName, int quantity){
+		return true;
+	}
+
+	public String processPurchaseOrder(Item purchaseItem) {
+		System.out.println("processPurchaseOrder is called...");
+		if(!purchaseItem.manufacturerName.equals(fullName)){
+			return null;
+		}		
+		Item availableItem = purchaseOrderManager.itemsMap.get(purchaseItem.productType);
+		if(availableItem == null){
+			return null;
+		}else{
+			if(purchaseItem.unitPrice < availableItem.unitPrice){
+				return null;
+			}else{
+				if(purchaseItem.quantity >= availableItem.quantity){
+					int oneTimeQuantity = 100;
+					if(produce(purchaseItem.productType, oneTimeQuantity)){
+						availableItem.quantity =availableItem.quantity + oneTimeQuantity;
+						purchaseOrderManager.saveItems();
+						
+					}else{
+						return null;
+					}
+				}
+				
+				if(purchaseItem.quantity >= availableItem.quantity){
+					return null;
+				}else{
+					String orderNumString = new Integer(orderNum++).toString();
+					purchaseOrderMap.put(orderNumString, purchaseItem);
+					return orderNumString;
+				}
+			}
+		}
+	}
+	
+	public Product getProductInfo(String productType){
+		Item avaiableItem = purchaseOrderManager.itemsMap.get(productType);
+		if(avaiableItem == null){
+			return null;
+		}else{
+			return new Product(avaiableItem.manufacturerName, avaiableItem.productType, avaiableItem.unitPrice);
+		}
+	}
+	
+	public boolean receivePayment(String orderNum, float totalPrice){
+		Item waitingForPayItem = purchaseOrderMap.get(orderNum);
+		if(waitingForPayItem == null){
+			return false;
+		}else{
+			if(waitingForPayItem.quantity * waitingForPayItem.unitPrice  == totalPrice){
+				Item inhandItem = purchaseOrderManager.itemsMap.get(waitingForPayItem.productType);
+				inhandItem.quantity = inhandItem.quantity - waitingForPayItem.quantity;
+				purchaseOrderManager.saveItems();
+				purchaseOrderMap.remove(orderNum);
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
+	
+
+	public ProductList getProductList(){
+		ProductList productList= new ProductList();
+		for(Item item: purchaseOrderManager.itemsMap.values()){
+			productList.addProduct(item.cloneProduct());
+		}		
+		return productList;		
+	}
+	
 	public static void main(String[] args) {
 		String baseName = "Manufacturer";
 		String extraName = "Replica";

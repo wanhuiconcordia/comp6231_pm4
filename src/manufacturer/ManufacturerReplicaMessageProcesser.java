@@ -7,6 +7,14 @@ import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
 import tools.message.manufacturerReplica.ManufacturerDoSyncMessage;
+import tools.message.manufacturerReplica.ManufacturerReplicaGetProductInfoMessage;
+import tools.message.manufacturerReplica.ManufacturerReplicaGetProductListMessage;
+import tools.message.manufacturerReplica.ManufacturerReplicaProcessPurchaseOrderMessage;
+import tools.message.manufacturerReplica.ManufacturerReplicaReceivePaymentMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerGetProductInfoMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerGetProductListMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerProcessPurchaseOrderMessage;
+import tools.message.manufacturerSequencer.ManufacturerSequencerReceivePaymentMessage;
 import tools.message.replica.AskSyncMessage;
 import tools.message.rm.RMSyncMessage;
 
@@ -38,14 +46,14 @@ public class ManufacturerReplicaMessageProcesser extends MessageProcesser{
 						, new ManufacturerDoSyncMessage(channel.localProcessName
 								, ++channel.localSeq
 								, channel.peerSeq
-								, manufacturerReplica.purchaseOrderMap));
+								, manufacturerReplica.purchaseOrderManager.itemsMap));
 				synchronized (channelManager.outgoingPacketQueueLock) {
 					channelManager.outgoingPacketQueue.add(channel.backupPacket);
 				}
 				break;
 			case doSync:
 				ManufacturerDoSyncMessage doSyncMessage = (ManufacturerDoSyncMessage)msg;
-				manufacturerReplica.purchaseOrderMap = doSyncMessage.itemsMap;
+				manufacturerReplica.purchaseOrderManager.itemsMap = doSyncMessage.itemsMap;
 				channel.isWaitingForRespose = false;
 				break;
 			case sync:
@@ -67,22 +75,81 @@ public class ManufacturerReplicaMessageProcesser extends MessageProcesser{
 				ackBack(channelManager, channel);
 				break;
 
-			case signIn:
-//				ackBack(channelManager, channel);
-//				ManufacturerSequencerSignInMessage signInMsg = (ManufacturerSequencerSignInMessage)msg;
-//				Customer customer = manufacturerReplica.customerManager.find(signInMsg.customerReferenceNumber, signInMsg.password);
-//				if(channelManager.channelMap.containsKey("ManufacturerFE")){
-//					Channel FEChannel = channelManager.channelMap.get("ManufacturerFE");
-//					Message responsMsg = new ManufacturerReplicaSignInResultMessage(FEChannel.localProcessName
-//							, ++FEChannel.localSeq
-//							, FEChannel.peerSeq
-//							, customer);
-//					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
-//					FEChannel.isWaitingForRespose = true;
-//				}
-
+			case processPurchaseOrder:
+				ackBack(channelManager, channel);
+				ManufacturerSequencerProcessPurchaseOrderMessage processPurchaseMsg 
+				= (ManufacturerSequencerProcessPurchaseOrderMessage) msg;
+				
+				
+				if(channelManager.channelMap.containsKey(manufacturerReplica.baseName 
+						+ manufacturerReplica.manufacturerIndex + "FE")){
+					Channel FEChannel = channelManager.channelMap.get(manufacturerReplica.baseName 
+							+ manufacturerReplica.manufacturerIndex + "FE");
+					Message responsMsg = new ManufacturerReplicaProcessPurchaseOrderMessage(FEChannel.localProcessName
+							, ++FEChannel.localSeq
+							, FEChannel.peerSeq
+							, manufacturerReplica.processPurchaseOrder(processPurchaseMsg.item));
+					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
+					FEChannel.isWaitingForRespose = true;
+				}
 				break;
-			
+			case getProductInfo:
+				ackBack(channelManager, channel);
+				ManufacturerSequencerGetProductInfoMessage getProductInfoMsg 
+				= (ManufacturerSequencerGetProductInfoMessage) msg;
+				
+				
+				if(channelManager.channelMap.containsKey(manufacturerReplica.baseName 
+						+ manufacturerReplica.manufacturerIndex + "FE")){
+					Channel FEChannel = channelManager.channelMap.get(manufacturerReplica.baseName 
+							+ manufacturerReplica.manufacturerIndex + "FE");
+					Message responsMsg = new ManufacturerReplicaGetProductInfoMessage(FEChannel.localProcessName
+							, ++FEChannel.localSeq
+							, FEChannel.peerSeq
+							, manufacturerReplica.getProductInfo(getProductInfoMsg.aProdName));
+					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
+					FEChannel.isWaitingForRespose = true;
+				}
+				break;
+				
+			case receivePayment:
+				
+				ackBack(channelManager, channel);
+				ManufacturerSequencerReceivePaymentMessage receivePayMentMsg 
+				= (ManufacturerSequencerReceivePaymentMessage) msg;
+				
+				
+				if(channelManager.channelMap.containsKey(manufacturerReplica.baseName 
+						+ manufacturerReplica.manufacturerIndex + "FE")){
+					Channel FEChannel = channelManager.channelMap.get(manufacturerReplica.baseName 
+							+ manufacturerReplica.manufacturerIndex + "FE");
+					Message responsMsg = new ManufacturerReplicaReceivePaymentMessage(FEChannel.localProcessName
+							, ++FEChannel.localSeq
+							, FEChannel.peerSeq
+							, manufacturerReplica.receivePayment(receivePayMentMsg.orderNum, receivePayMentMsg.totalPrice));
+					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
+					FEChannel.isWaitingForRespose = true;
+				}
+				break;
+				
+			case getProductList:
+				ackBack(channelManager, channel);
+				ManufacturerSequencerGetProductListMessage getProductListMsg
+				= (ManufacturerSequencerGetProductListMessage) msg;
+				
+				
+				if(channelManager.channelMap.containsKey(manufacturerReplica.baseName 
+						+ manufacturerReplica.manufacturerIndex + "FE")){
+					Channel FEChannel = channelManager.channelMap.get(manufacturerReplica.baseName 
+							+ manufacturerReplica.manufacturerIndex + "FE");
+					Message responsMsg = new ManufacturerReplicaGetProductListMessage(FEChannel.localProcessName
+							, ++FEChannel.localSeq
+							, FEChannel.peerSeq
+							, manufacturerReplica.getProductList());
+					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
+					FEChannel.isWaitingForRespose = true;
+				}
+				break;
 			default:
 				break;
 			}
