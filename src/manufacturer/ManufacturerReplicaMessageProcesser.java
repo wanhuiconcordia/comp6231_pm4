@@ -37,13 +37,16 @@ public class ManufacturerReplicaMessageProcesser extends MessageProcesser{
 						, channel.peerPort
 						, new ManufacturerDoSyncMessage(channel.localProcessName
 								, ++channel.localSeq
-								, channel.peerSeq));
+								, channel.peerSeq
+								, manufacturerReplica.purchaseOrderMap));
+				synchronized (channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
 				break;
 			case doSync:
-				ackBack(channelManager, channel);
 				ManufacturerDoSyncMessage doSyncMessage = (ManufacturerDoSyncMessage)msg;
-				
-				//TODO
+				manufacturerReplica.purchaseOrderMap = doSyncMessage.itemsMap;
+				channel.isWaitingForRespose = false;
 				break;
 			case sync:
 				ackBack(channelManager, channel);

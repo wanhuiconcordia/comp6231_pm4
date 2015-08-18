@@ -25,6 +25,7 @@ public class WarehouseReplica {
 	public String goodReplicaName;
 	public ChannelManager channelManager; 
 	public LoggerClient loggerClient;
+	public InventoryManager inventoryManager;
 
 	
 	public WarehouseReplica(LoggerClient loggerClient 

@@ -37,13 +37,17 @@ public class WarehouseReplicaMessageProcesser extends MessageProcesser{
 						, channel.peerPort
 						, new WarehouseDoSyncMessage(channel.localProcessName
 								, ++channel.localSeq
-								, channel.peerSeq));
+								, channel.peerSeq
+								, warehouseReplica.inventoryManager.inventoryItemMap));
+				synchronized (channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
 				break;
 			case doSync:
 				ackBack(channelManager, channel);
 				WarehouseDoSyncMessage doSyncMessage = (WarehouseDoSyncMessage)msg;
-				
-				//TODO
+				warehouseReplica.inventoryManager.inventoryItemMap = doSyncMessage.inventoryItemMap;
+				channel.isWaitingForRespose = false;
 				break;
 			case sync:
 				ackBack(channelManager, channel);

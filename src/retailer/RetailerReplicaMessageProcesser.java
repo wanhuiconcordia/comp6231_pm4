@@ -61,12 +61,16 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 								, ++channel.localSeq
 								, channel.peerSeq
 								, retailerReplica.customerManager.customers));
+				synchronized (channelManager.outgoingPacketQueueLock) {
+					channelManager.outgoingPacketQueue.add(channel.backupPacket);
+				}
 				break;
 			case doSync:
 				ackBack(channelManager, channel);
 				RetailerDoSyncMessage doSyncMessage = (RetailerDoSyncMessage)msg;
 				retailerReplica.customerManager.customers = doSyncMessage.customerList;
 				retailerReplica.customerManager.saveCustomers();
+				channel.isWaitingForRespose = false;
 				break;
 			case sync:
 				ackBack(channelManager, channel);

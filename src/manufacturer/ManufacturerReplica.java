@@ -27,7 +27,7 @@ public class ManufacturerReplica {
 	public LoggerClient loggerClient;
 
 	
-	private HashMap<String, Item> purchaseOrderMap;
+	public HashMap<String, Item> purchaseOrderMap;
 	private int orderNum;
 	private PurchaseOrderManager purchaseOrderManager;
 	
