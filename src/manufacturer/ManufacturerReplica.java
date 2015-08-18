@@ -82,7 +82,7 @@ public class ManufacturerReplica {
 		
 		purchaseOrderMap = new HashMap<String, Item>();
 		orderNum = 1000;
-		purchaseOrderManager = new PurchaseOrderManager(fullName);
+		purchaseOrderManager = new PurchaseOrderManager(baseName + manufacturerIndex, fullName);
 		
 		if(mode == 1){
 			for(Channel channel: channelManager.channelMap.values()){

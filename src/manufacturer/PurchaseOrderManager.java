@@ -19,13 +19,14 @@ import tools.XmlFileController;
 public class PurchaseOrderManager {
 	public HashMap<String, Item> itemsMap;
 	private String manufacturerName;
-	
+	String replicaXmlFileName;
 	/**
 	 * @param manufacturerName
 	 */
-	public PurchaseOrderManager(String manufacturerName){
+	public PurchaseOrderManager(String manufacturerName, String replicaXmlFileName){
 		itemsMap = new HashMap<String, Item>();
 		this.manufacturerName = manufacturerName;
+		this.replicaXmlFileName = replicaXmlFileName;
 		loadItems();
 	}
 
@@ -34,12 +35,12 @@ public class PurchaseOrderManager {
 	 * and save them in itemsMap
 	 */
 	private void loadItems(){
-		XmlFileController xmlfile = new XmlFileController(manufacturerName + ".xml");
+		XmlFileController xmlfile = new XmlFileController("product_info.xml");
 		Element root = xmlfile.Read();
 		if(root != null){
 			List<Element> nodes = root.elements("item");
 			for(Element subElem: nodes){
-				String manufacturerName = subElem.element("manufacturerName").getText();
+				String manufacturerName = this.manufacturerName;
 				String productType = subElem.element("productType").getText();
 				float unitPrice = Float.parseFloat(subElem.element("unitPrice").getText());
 				int quantity = Integer.parseInt(subElem.element("quantity").getText());
@@ -55,7 +56,7 @@ public class PurchaseOrderManager {
 	 */
 	public void saveItems()
 	{
-		XmlFileController xmlFileControler = new XmlFileController(manufacturerName + ".xml");
+		XmlFileController xmlFileControler = new XmlFileController(replicaXmlFileName + ".xml");
 		OutputFormat format = OutputFormat.createPrettyPrint();
 		format.setEncoding("UTF-8");
 		Document document = DocumentHelper.createDocument();

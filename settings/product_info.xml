@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<products>
-  <product>
-    <productType>DVD player</productType>
-  </product>
-  <product>
-    <productType>TV</productType>
-  </product>
-  <product>
-    <productType>video camera</productType>
-  </product>
-</products>
+<items>
+  <item>
+	<itemType>TV</itemType>
+	<unitPrice>310</unitPrice>
+	<quantity>100</quantity>
+  </item>
+  <item>
+	<itemType>video camera</itemType>
+	<unitPrice>230</unitPrice>
+	<quantity>100</quantity>
+  </item>
+  <item>
+	<itemType>DVD player</itemType>
+	<unitPrice>140</unitPrice>
+	<quantity>100</quantity>
+  </item>
+</items>
