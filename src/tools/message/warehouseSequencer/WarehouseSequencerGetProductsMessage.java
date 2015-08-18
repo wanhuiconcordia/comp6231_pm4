@@ -5,9 +5,9 @@ import tools.message.warehouseFE.WarehouseFEGetProductsMessage;
 public class WarehouseSequencerGetProductsMessage extends WarehouseFEGetProductsMessage{
 	public int sequencerID;
 	public WarehouseSequencerGetProductsMessage(String sender, int senderSeq, int receiverSeq,
-			String productID, String manufacturerName, int sequencerID){
+			String productID, int sequencerID){
 		
-		super(sender, senderSeq, receiverSeq, productID, manufacturerName);
+		super(sender, senderSeq, receiverSeq, productID);
 		this.sequencerID = sequencerID;
 	}
 	

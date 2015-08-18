@@ -1,4 +1,4 @@
-package tools.message.replica;
+package tools.message.retailerReplica;
 
 import java.util.ArrayList;
 
@@ -6,9 +6,9 @@ import tools.Customer;
 import tools.message.Action;
 import tools.message.Message;
 
-public class DoSyncMessage extends Message {
+public class RetailerDoSyncMessage extends Message {
 	public ArrayList<Customer> customerList;
-	public DoSyncMessage(String sender, int senderSeq, int receiverSeq,
+	public RetailerDoSyncMessage(String sender, int senderSeq, int receiverSeq,
 			ArrayList<Customer> customerList) {
 		super(sender, senderSeq, receiverSeq, Action.doSync);
 		this.customerList = customerList;

@@ -27,8 +27,6 @@ public class WarehouseSequencerMessageProcesser extends MessageProcesser {
 			channel.isWaitingForRespose = false;
 		}else{
 			channel.receivedMessage = msg;
-			ackBack(channelManager, channel);
-
 			switch(msg.action){
 			case shippingGoods:
 			case getProducts:
@@ -54,14 +52,18 @@ public class WarehouseSequencerMessageProcesser extends MessageProcesser {
 					}
 				}
 				break;
+			case INIT:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
+				channel.timeoutTimes = 0;
+				channel.isWaitingForRespose = false;
+				break;
 			default:
 				System.out.println("Unrecognizable action");
 				break;
 			}
+			ackBack(channelManager, channel);
 		}
-
-		
-		
 	}
 
 	
@@ -78,14 +80,12 @@ public class WarehouseSequencerMessageProcesser extends MessageProcesser {
 							, localSeq
 							, peerSeq
 							,((WarehouseFEShippingGoodsMessage)receivedMsg).itemList 
-							, ((WarehouseFEShippingGoodsMessage)receivedMsg).retailerName
 							, sequencerID); 
 		case getProducts:
 			return new WarehouseSequencerGetProductsMessage(localProcessName
 							, localSeq
 							, peerSeq 
 							, ((WarehouseFEGetProductsMessage)receivedMsg).productID 
-							, ((WarehouseFEGetProductsMessage)receivedMsg).manufacturerName
 							, sequencerID);
 		case getProductsByRegisteredManufacturers:
 			return new WarehouseSequencerGetProductsByRegisteredManufacturersMessage(localProcessName

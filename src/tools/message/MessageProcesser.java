@@ -8,16 +8,10 @@ public abstract class MessageProcesser {
 			Channel channel = channelManager.channelMap.get(msg.sender);
 			channel.timeoutTimes = 0;
 			if(msg.senderSeq < channel.peerSeq){
-				if(msg.action == Action.INIT){
+				if(msg.action == Action.INIT
+						|| msg.action == Action.askInitSync){
 					channel.localSeq = 0;
-					channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
-							, channel.peerPort
-							, new AckMessage(channel.localProcessName
-									, ++channel.localSeq
-									, msg.senderSeq));
-					synchronized(channelManager.outgoingPacketQueueLock) {
-						channelManager.outgoingPacketQueue.add(channel.backupPacket);
-					}
+					processNewRequest(channelManager, channel, msg);
 				}else{
 					System.out.println("Delayed msg, drop...");
 				}

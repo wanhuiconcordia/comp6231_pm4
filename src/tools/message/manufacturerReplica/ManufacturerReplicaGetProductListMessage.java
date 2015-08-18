@@ -5,10 +5,10 @@ import tools.message.Action;
 import tools.message.Message;
 import tools.message.ResultComparator;
 
-public class ManufacturerFEGetProductListMessage extends Message implements ResultComparator<ManufacturerFEGetProductListMessage>{
+public class ManufacturerReplicaGetProductListMessage extends Message implements ResultComparator<ManufacturerReplicaGetProductListMessage>{
 	public ProductList productList;
 	
-	public ManufacturerFEGetProductListMessage(String sender, int senderSeq,
+	public ManufacturerReplicaGetProductListMessage(String sender, int senderSeq,
 			int receiverSeq, ProductList productList) {
 		super(sender, senderSeq, receiverSeq, Action.getProductList);
 		this.productList = productList;
@@ -19,7 +19,7 @@ public class ManufacturerFEGetProductListMessage extends Message implements Resu
 	}
 
 	@Override
-	public boolean hasSameResult(ManufacturerFEGetProductListMessage other) {
+	public boolean hasSameResult(ManufacturerReplicaGetProductListMessage other) {
 		if(productList == null){
 			if(other.productList == null){
 				return true;
@@ -34,5 +34,5 @@ public class ManufacturerFEGetProductListMessage extends Message implements Resu
 			}
 		}
 	}
-	
+
 }

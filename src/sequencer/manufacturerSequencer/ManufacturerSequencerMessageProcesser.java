@@ -1,3 +1,4 @@
+
 package sequencer.manufacturerSequencer;
 
 import tools.channel.Channel;
@@ -13,7 +14,6 @@ import tools.message.manufacturerSequencer.ManufacturerSequencerGetProductListMe
 import tools.message.manufacturerSequencer.ManufacturerSequencerProcessPurchaseOrderMessage;
 import tools.message.manufacturerSequencer.ManufacturerSequencerReceivePaymentMessage;
 
-
 public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 
 	@Override
@@ -22,14 +22,11 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 			channel.isWaitingForRespose = false;
 		}else{
 			channel.receivedMessage = msg;
-			ackBack(channelManager, channel);
-
 			switch(msg.action){
 			case processPurchaseOrder:
 			case getProductInfo:
 			case receivePayment:
 			case getProductList:
-			case getName:
 				channelManager.sequencerID++;
 				for(Channel replicaChannel: channelManager.channelMap.values()){
 					if(replicaChannel.group == Group.REPLICA){
@@ -40,7 +37,7 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 										, replicaChannel.peerSeq
 										, channelManager.sequencerID
 										, msg));
-						
+
 						replicaChannel.isWaitingForRespose = true;
 						synchronized(channelManager.outgoingPacketQueueLock) {
 							channelManager.outgoingPacketQueue.add(replicaChannel.backupPacket);
@@ -49,21 +46,30 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 					}
 				}
 				break;
+			case INIT:
+				channel.localSeq = 0;
+				channel.peerSeq = msg.senderSeq;
+				channel.timeoutTimes = 0;
+				channel.isWaitingForRespose = false;
+				break;
+
 			default:
 				System.out.println("Unrecognizable action");
 				break;
 			}
+
+			ackBack(channelManager, channel);
 		}
 	}
-	
+
 	private Message generateManufacturerSequencerMessage(String localProcessName
 			, int localSeq
 			, int peerSeq
 			, int sequencerID
 			, Message receivedMsg){
-		
-	System.out.println("generateWarehouseSequencerMessage() is called.");
-	switch(receivedMsg.action){
+
+		System.out.println("generateWarehouseSequencerMessage() is called.");
+		switch(receivedMsg.action){
 		case processPurchaseOrder:
 			return new ManufacturerSequencerProcessPurchaseOrderMessage(localProcessName
 					, localSeq
@@ -83,24 +89,22 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 					, ((ManufacturerFEReceivePaymentMessage)receivedMsg).orderNum
 					, ((ManufacturerFEReceivePaymentMessage)receivedMsg).totalPrice
 					, sequencerID);
-	
+
 		case getProductList:
 			return  new ManufacturerSequencerGetProductListMessage(localProcessName
 					, localSeq
 					, peerSeq
 					, sequencerID); 
 		}
-	
-	System.out.println("Bad action");
-	return null;
+
+		System.out.println("Bad action");
+		return null;
 	}
 
 	@Override
 	public void processDuplicaRequest(ChannelManager channelManager,
 			Channel channel, Message msg) {
 		// TODO Auto-generated method stub
-		
-	}
 
-	
+	}
 }

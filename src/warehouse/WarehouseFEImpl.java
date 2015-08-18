@@ -16,13 +16,21 @@ import tools.message.Packet;
 import tools.message.retailerFE.RetailerFEGetCatelogMessage;
 import tools.message.retailerReplica.RetailerReplicaGetCatalogResultMessage;
 import tools.message.warehouseFE.WarehouseFEGetProductsByIDMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsByTypeMessage;
+import tools.message.warehouseFE.WarehouseFEGetProductsMessage;
+import tools.message.warehouseFE.WarehouseFEShippingGoodsMessage;
 import tools.message.warehouseReplica.WarehouseReplicaGetProductsByIDMessage;
+import tools.message.warehouseReplica.WarehouseReplicaGetProductsByRegisteredManufacturersMessage;
+import tools.message.warehouseReplica.WarehouseReplicaGetProductsByTypeMessage;
+import tools.message.warehouseReplica.WarehouseReplicaGetProductsMessage;
+import tools.message.warehouseReplica.WarehouseReplicaShippingGoodsMessage;
 
 @WebService(endpointInterface = "warehouse.WarehouseInterface")
 public class WarehouseFEImpl extends FE implements WarehouseInterface {
 	public LoggerClient loggerClient;
 	public String name;
-	public int currentSequencerID;
+	public int currentSequencerID = 0;
 	public Object cachedObj;
 	public Object lock = new Object();
 	/**
@@ -64,15 +72,16 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 				}else{
 					return (ItemList)cachedObj;
 				}
-			}else if(currentSequencerID == sequencerID + 1){
+			}else if(currentSequencerID + 1 == sequencerID){
+				currentSequencerID = sequencerID;
 				resetReplicaChannel();
 				Channel channel = channelManager.channelMap.get(name + "Sequencer");
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
-						, new RetailerFEGetCatelogMessage(channel.localProcessName
+						, new WarehouseFEGetProductsByIDMessage(channel.localProcessName
 								, channel.localSeq
 								, channel.peerPort
-								, 333));
+								, productID));
 				channel.isWaitingForRespose = true;
 				
 				ReplicaResponse replicaResponse = waitForReplicResponse();
@@ -91,26 +100,111 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 	}
 	@Override
 	public ItemList getProductsByType(String productType, int sequencerID) {
-		// TODO Auto-generated method stub
-		return null;
+		synchronized (lock) {
+			if(sequencerID == currentSequencerID){
+				if(cachedObj == null){
+					return null;
+				}else{
+					return (ItemList)cachedObj;
+				}
+			}else if(currentSequencerID + 1 == sequencerID){
+				currentSequencerID = sequencerID;
+				resetReplicaChannel();
+				Channel channel = channelManager.channelMap.get(name + "Sequencer");
+				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
+						, channel.peerPort
+						, new WarehouseFEGetProductsByTypeMessage(channel.localProcessName
+								, channel.localSeq
+								, channel.peerPort
+								, productType));
+				channel.isWaitingForRespose = true;
+				
+				ReplicaResponse replicaResponse = waitForReplicResponse();
+
+				if(replicaResponse == null){
+					return null;
+				}else{
+					reportReplicaResult(replicaResponse);
+					return ((WarehouseReplicaGetProductsByTypeMessage)(replicaResponse.goodReplicaChannelList.get(0).receivedMessage)).itemList;
+				}
+			}else{
+				System.out.println("Bad sequencerID. currentSequencerID:" + currentSequencerID + ", Received sequencerID:" + sequencerID);
+				return null;
+			}
+		}
 	}
 	@Override
 	public ItemList getProductsByRegisteredManufacturers(
 			String manufacturerName, int sequencerID) {
-		// TODO Auto-generated method stub
-		return null;
+		synchronized (lock) {
+			if(sequencerID == currentSequencerID){
+				if(cachedObj == null){
+					return null;
+				}else{
+					return (ItemList)cachedObj;
+				}
+			}else if(currentSequencerID + 1 == sequencerID){
+				currentSequencerID = sequencerID;
+				resetReplicaChannel();
+				Channel channel = channelManager.channelMap.get(name + "Sequencer");
+				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
+						, channel.peerPort
+						, new WarehouseFEGetProductsByRegisteredManufacturersMessage(channel.localProcessName
+								, channel.localSeq
+								, channel.peerPort
+								, manufacturerName));
+				channel.isWaitingForRespose = true;
+				
+				ReplicaResponse replicaResponse = waitForReplicResponse();
+
+				if(replicaResponse == null){
+					return null;
+				}else{
+					reportReplicaResult(replicaResponse);
+					return ((WarehouseReplicaGetProductsByRegisteredManufacturersMessage)(replicaResponse.goodReplicaChannelList.get(0).receivedMessage)).itemList;
+				}
+			}else{
+				System.out.println("Bad sequencerID. currentSequencerID:" + currentSequencerID + ", Received sequencerID:" + sequencerID);
+				return null;
+			}
+		}
 	}
-	@Override
-	public ItemList getProducts(String productID, String manufacturerName,
-			int sequencerID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 	@Override
 	public ItemList shippingGoods(ItemList itemList,
 			int sequencerID) {
-		// TODO Auto-generated method stub
-		return null;
+		synchronized (lock) {
+			if(sequencerID == currentSequencerID){
+				if(cachedObj == null){
+					return null;
+				}else{
+					return (ItemList)cachedObj;
+				}
+			}else if(currentSequencerID + 1 == sequencerID){
+				currentSequencerID = sequencerID;
+				resetReplicaChannel();
+				Channel channel = channelManager.channelMap.get(name + "Sequencer");
+				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
+						, channel.peerPort
+						, new WarehouseFEShippingGoodsMessage(channel.localProcessName
+								, channel.localSeq
+								, channel.peerPort
+								, itemList));
+				channel.isWaitingForRespose = true;
+				
+				ReplicaResponse replicaResponse = waitForReplicResponse();
+
+				if(replicaResponse == null){
+					return null;
+				}else{
+					reportReplicaResult(replicaResponse);
+					return ((WarehouseReplicaShippingGoodsMessage)(replicaResponse.goodReplicaChannelList.get(0).receivedMessage)).itemList;
+				}
+			}else{
+				System.out.println("Bad sequencerID. currentSequencerID:" + currentSequencerID + ", Received sequencerID:" + sequencerID);
+				return null;
+			}
+		}
 	}
 
 }

@@ -8,8 +8,8 @@ public class WarehouseSequencerShippingGoodsMessage extends WarehouseFEShippingG
 	public int sequencerID;
 	public ItemList itemList;
 	
-	public WarehouseSequencerShippingGoodsMessage(String sender, int senderSeq, int receiverSeq,ItemList itemList,String retailerName, int sequencerID){
-		super(sender, senderSeq, receiverSeq, itemList, retailerName);
+	public WarehouseSequencerShippingGoodsMessage(String sender, int senderSeq, int receiverSeq,ItemList itemList, int sequencerID){
+		super(sender, senderSeq, receiverSeq, itemList);
 		this.itemList = itemList;
 		this.sequencerID = sequencerID;		
 	}

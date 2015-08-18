@@ -40,7 +40,7 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 										, replicaChannel.peerSeq
 										, channelManager.sequencerID
 										, msg));
-						
+
 						replicaChannel.isWaitingForRespose = true;
 						synchronized(channelManager.outgoingPacketQueueLock) {
 							channelManager.outgoingPacketQueue.add(replicaChannel.backupPacket);
@@ -52,13 +52,15 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 			case INIT:
 				channel.localSeq = 0;
 				channel.peerSeq = msg.senderSeq;
+				channel.timeoutTimes = 0;
+				channel.isWaitingForRespose = false;
 				break;
 
 			default:
 				System.out.println("Unrecognizable action");
 				break;
 			}
-			
+
 			ackBack(channelManager, channel);
 		}
 	}
@@ -113,6 +115,6 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 	public void processDuplicaRequest(ChannelManager channelManager,
 			Channel channel, Message msg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

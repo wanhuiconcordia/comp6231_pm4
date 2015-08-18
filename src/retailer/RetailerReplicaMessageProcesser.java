@@ -16,10 +16,10 @@ import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
 import tools.message.replica.AskSyncMessage;
-import tools.message.replica.DoSyncMessage;
 import tools.message.retailerFE.RetailerFEGetCatelogMessage;
 import tools.message.retailerFE.RetailerFESignInMessage;
 import tools.message.retailerFE.RetailerFESignUpMessage;
+import tools.message.retailerReplica.RetailerDoSyncMessage;
 import tools.message.retailerReplica.RetailerReplicaGetCatalogResultMessage;
 import tools.message.retailerReplica.RetailerReplicaSignInResultMessage;
 import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
@@ -47,19 +47,24 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 		}else{
 			channel.receivedMessage = msg;
 			switch(msg.action){
-			case askSync:
+			case INIT:
 				channel.localSeq = 0;
+				ackBack(channelManager, channel);
+				break;
+			case askInitSync:
+				channel.localSeq = 0;
+			case askSync:
 				channel.peerSeq = msg.senderSeq;
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
-						, new DoSyncMessage(channel.localProcessName
+						, new RetailerDoSyncMessage(channel.localProcessName
 								, ++channel.localSeq
 								, channel.peerSeq
 								, retailerReplica.customerManager.customers));
 				break;
 			case doSync:
 				ackBack(channelManager, channel);
-				DoSyncMessage doSyncMessage = (DoSyncMessage)msg;
+				RetailerDoSyncMessage doSyncMessage = (RetailerDoSyncMessage)msg;
 				retailerReplica.customerManager.customers = doSyncMessage.customerList;
 				retailerReplica.customerManager.saveCustomers();
 				break;

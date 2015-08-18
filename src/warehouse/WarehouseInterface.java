@@ -35,14 +35,6 @@ public interface WarehouseInterface {
 	 */
 	@WebMethod ItemList getProductsByRegisteredManufacturers (String manufacturerName, int sequencerID);
 	/**
-	 * get products by ManufacturerName and product ID
-	 * @param manufacturerName
-	 * @param productID
-	 * @param sequencerID
-	 * @return ItemList
-	 */
-	@WebMethod ItemList getProducts (String productID, String manufacturerName, int sequencerID);
-	/**
 	 * registerRetailer
 	 * @param sequencerID
 	 * @return true if success otherwise return false;
