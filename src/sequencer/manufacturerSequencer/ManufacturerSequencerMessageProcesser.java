@@ -95,5 +95,12 @@ public class ManufacturerSequencerMessageProcesser extends MessageProcesser {
 	return null;
 	}
 
+	@Override
+	public void processDuplicaRequest(ChannelManager channelManager,
+			Channel channel, Message msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }

@@ -3,10 +3,13 @@ package retailer;
 import tools.SignUpResult;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
+import tools.channel.Group;
 import tools.message.Action;
 import tools.message.Message;
 import tools.message.MessageProcesser;
 import tools.message.Packet;
+import tools.message.replica.AskSyncMessage;
+import tools.message.replica.DoSyncMessage;
 import tools.message.retailerReplica.RetailerReplicaSignUpReultMessage;
 import tools.message.rm.RMSyncMessage;
 
@@ -22,18 +25,32 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 			case askSync:
 				channel.localSeq = 0;
 				channel.peerSeq = msg.senderSeq;
-				
-				//response with data
+				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
+							, channel.peerPort
+							, new DoSyncMessage(channel.localProcessName
+									, ++channel.localSeq
+									, channel.peerSeq
+									, "dddd"));
 				break;
 			case doSync:
 				ackBack(channelManager, channel);
+				DoSyncMessage doSyncMessage = (DoSyncMessage)msg;
+				//todo
 				break;
 			case sync:
 				ackBack(channelManager, channel);
 				RMSyncMessage syncMsg = (RMSyncMessage)msg;
-				int goodIndex = syncMsg.goodReplicaIndex;
-				
-				//find good replica then send askSync
+
+				if(channelManager.channelMap.containsKey(syncMsg.goodReplicaName)){
+					Channel replicaChannel = channelManager.channelMap.get(syncMsg.goodReplicaName);
+					replicaChannel.backupPacket = new Packet(replicaChannel.peerProcessName, replicaChannel.peerHost
+							, replicaChannel.peerPort
+							, new AskSyncMessage(replicaChannel.localProcessName
+									, ++replicaChannel.localSeq
+									, replicaChannel.peerSeq));
+				}else{
+					System.out.println("Wrong. Cannot find " + syncMsg.goodReplicaName);
+				}
 				break;
 			case HEART_BEAT:
 				ackBack(channelManager, channel);
@@ -78,6 +95,13 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void processDuplicaRequest(ChannelManager channelManager,
+			Channel channel, Message msg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

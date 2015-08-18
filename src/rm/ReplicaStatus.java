@@ -1,5 +1,5 @@
 package rm;
 
 public enum ReplicaStatus {
-	good, fail, noAnswer
+	REPLICA_GOOD, REPLICA_FAIL, REPLICA_CRUSH
 }

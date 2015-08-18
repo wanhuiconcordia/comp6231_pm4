@@ -21,6 +21,7 @@ import tools.SignUpResult;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.channel.ReplicaChannel;
 import tools.fe.FE;
 import tools.fe.ReplicaResponse;
 import tools.message.Action;
@@ -61,7 +62,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		for(int i = 1; i <= 4; i++){
 			host = ConfigureManager.getInstance().getString("RetailerReplica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerReplica" + i + "Port");
-			channelManager.addChannel(new Channel(name, "RetailerReplica" + i, host, port, Group.REPLICA));
+			channelManager.addChannel(new ReplicaChannel(name, "RetailerReplica" + i, host, port, Group.REPLICA));
 
 			host = ConfigureManager.getInstance().getString("RetailerRM" + i + "Host");
 			port = ConfigureManager.getInstance().getInt("RetailerRM" + i + "Port");

@@ -1,7 +1,7 @@
 package tools.message;
 
 public enum Action {
-	ACK, INIT, REPLICA_RESULT, HEART_BEAT,
+	ACK, INIT, REPLICA_RESULT, HEART_BEAT, REPLICA_CRUSH,
 	sync, askSync, doSync,
 	signUp, signIn, getCatelog, submitOrder,
 	shippingGoods, getProducts, getProductsByRegisteredManufacturers,

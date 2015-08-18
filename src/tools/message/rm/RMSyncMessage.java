@@ -4,13 +4,13 @@ import tools.message.Action;
 import tools.message.Message;
 
 public class RMSyncMessage extends Message {
-	public int goodReplicaIndex;
-	public RMSyncMessage(String sender, int senderSeq, int receiverSeq, int goodReplicaIndex) {
+	public String goodReplicaName;
+	public RMSyncMessage(String sender, int senderSeq, int receiverSeq, String goodReplicaName) {
 		super(sender, senderSeq, receiverSeq, Action.sync);
-		this.goodReplicaIndex = goodReplicaIndex;
+		this.goodReplicaName = goodReplicaName;
 	}
 	
 	public String toString(){
-		return super.toString() + ", " + goodReplicaIndex;
+		return super.toString() + ", " + goodReplicaName;
 	}
 }

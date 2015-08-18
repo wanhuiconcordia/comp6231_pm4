@@ -108,4 +108,11 @@ public class RetailerSequencerMessageProcesser extends MessageProcesser {
 		System.out.println("Bad action");
 		return null;
 	}
+
+	@Override
+	public void processDuplicaRequest(ChannelManager channelManager,
+			Channel channel, Message msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -32,4 +32,11 @@ public class ManufacturerFEMessageProcesser extends MessageProcesser {
 		}
 	}
 
+	@Override
+	public void processDuplicaRequest(ChannelManager channelManager,
+			Channel channel, Message msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
