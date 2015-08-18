@@ -2,28 +2,23 @@ package warehouse;
 
 import javax.jws.WebService;
 
-import com.sun.org.apache.xerces.internal.parsers.CachingParserPool.SynchronizedGrammarPool;
-
 import tools.ConfigureManager;
 import tools.ItemList;
 import tools.LoggerClient;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.channel.ReplicaChannel;
 import tools.fe.FE;
 import tools.fe.ReplicaResponse;
 import tools.message.Packet;
-import tools.message.retailerFE.RetailerFEGetCatelogMessage;
-import tools.message.retailerReplica.RetailerReplicaGetCatalogResultMessage;
 import tools.message.warehouseFE.WarehouseFEGetProductsByIDMessage;
 import tools.message.warehouseFE.WarehouseFEGetProductsByRegisteredManufacturersMessage;
 import tools.message.warehouseFE.WarehouseFEGetProductsByTypeMessage;
-import tools.message.warehouseFE.WarehouseFEGetProductsMessage;
 import tools.message.warehouseFE.WarehouseFEShippingGoodsMessage;
 import tools.message.warehouseReplica.WarehouseReplicaGetProductsByIDMessage;
 import tools.message.warehouseReplica.WarehouseReplicaGetProductsByRegisteredManufacturersMessage;
 import tools.message.warehouseReplica.WarehouseReplicaGetProductsByTypeMessage;
-import tools.message.warehouseReplica.WarehouseReplicaGetProductsMessage;
 import tools.message.warehouseReplica.WarehouseReplicaShippingGoodsMessage;
 
 @WebService(endpointInterface = "warehouse.WarehouseInterface")
@@ -54,8 +49,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 		for(int i = 1; i <= 4; i++){
 			host = ConfigureManager.getInstance().getString(name + "Replica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt(name + "Replica" + i + "Port");
-			channelManager.addChannel(new Channel(name, name + "Replica" + i, host, port, Group.REPLICA));
-
+			channelManager.addChannel(new ReplicaChannel(name, name + "Replica" + i, host, port, Group.REPLICA));
 			host = ConfigureManager.getInstance().getString(name + "RM" + i + "Host");
 			port = ConfigureManager.getInstance().getInt(name + "RM" + i + "Port");
 			channelManager.addChannel(new Channel(name, name + "RM" + i, host, port, Group.RM));

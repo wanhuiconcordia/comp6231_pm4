@@ -42,4 +42,26 @@ public class Channel {
 		System.out.println("Bad seq(delayed msg).");
 		return false;
 	}
+	
+	public String toString(){
+		String retVal = new String();
+		retVal = "localProcessName:" + localProcessName;
+		retVal = retVal + ", peerProcessName:" + peerProcessName;
+		retVal = retVal + ", peerHost:" + peerHost;
+		retVal = retVal + ", peerPort:" + peerPort;
+		retVal = retVal + ", group:" + group;
+		retVal = retVal + ", peerSeq:" + peerSeq;
+		retVal = retVal + ", localSeq:" + localSeq;
+		retVal = retVal + ", isWaitingForRespose:" + isWaitingForRespose;
+		retVal = retVal + ", timeoutTimes:" + timeoutTimes;
+		if(backupPacket != null){
+			retVal = retVal + ", backupPacket:" + backupPacket.toString();
+		}
+		
+		if(receivedMessage != null){
+			retVal = retVal + ", receivedMessage:" + receivedMessage.toString();
+		}
+				
+		return retVal;
+	}
 }

@@ -5,13 +5,13 @@ import javax.jws.WebService;
 import manufacturer.ManufacturerFEMessageProcesser;
 import tools.ConfigureManager;
 import tools.Item;
-import tools.ItemList;
 import tools.LoggerClient;
 import tools.Product;
 import tools.ProductList;
 import tools.channel.Channel;
 import tools.channel.ChannelManager;
 import tools.channel.Group;
+import tools.channel.ReplicaChannel;
 import tools.fe.FE;
 import tools.fe.ReplicaResponse;
 import tools.message.Packet;
@@ -23,9 +23,6 @@ import tools.message.manufacturerReplica.ManufacturerReplicaGetProductInfoMessag
 import tools.message.manufacturerReplica.ManufacturerReplicaGetProductListMessage;
 import tools.message.manufacturerReplica.ManufacturerReplicaProcessPurchaseOrderMessage;
 import tools.message.manufacturerReplica.ManufacturerReplicaReceivePaymentMessage;
-import tools.message.warehouseFE.WarehouseFEGetProductsByIDMessage;
-import tools.message.warehouseReplica.WarehouseReplicaGetProductsByIDMessage;
-import warehouse.WarehouseFEMessageProcesser;
 @WebService(endpointInterface = "manufacturer.ManufacturerInterface")
 public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 	public LoggerClient loggerClient;
@@ -57,7 +54,7 @@ public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 		for(int i = 1; i <= 4; i++){
 			host = ConfigureManager.getInstance().getString(name + "Replica" + i + "Host");
 			port = ConfigureManager.getInstance().getInt(name + "Replica" + i + "Port");
-			channelManager.addChannel(new Channel(name, name + "Replica" + i, host, port, Group.REPLICA));
+			channelManager.addChannel(new ReplicaChannel(name, name + "Replica" + i, host, port, Group.REPLICA));
 
 			host = ConfigureManager.getInstance().getString(name + "RM" + i + "Host");
 			port = ConfigureManager.getInstance().getInt(name + "RM" + i + "Port");

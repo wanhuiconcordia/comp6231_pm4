@@ -14,6 +14,7 @@ import tools.channel.ChannelManager;
 import tools.channel.Group;
 import tools.message.Message;
 import tools.message.Packet;
+import tools.message.replica.AskInitSyncMessage;
 import tools.message.replica.AskSyncMessage;
 import tools.message.replica.InitMessage;
 import warehouse.WarehouseInterface;
@@ -35,7 +36,6 @@ public class RetailerReplica {
 		this.replicaIndex = replicaIndex;
 		this.mode = mode;
 		this.loggerClient = loggerClient; 
-		loggerClient.write("index:" + replicaIndex + ", mode:" + mode);
 		String host = ConfigureManager.getInstance().getString("RetailerReplica" + replicaIndex + "Host");
 		int port = ConfigureManager.getInstance().getInt("RetailerReplica" + replicaIndex + "Port");
 		System.out.println(fullName + " udp channel:" + host + ":" + port);
@@ -53,7 +53,7 @@ public class RetailerReplica {
 
 		host = ConfigureManager.getInstance().getString("RetailerSequencerHost");
 		port = ConfigureManager.getInstance().getInt("RetailerSequencerPort");
-		channelManager.addChannel(new Channel(fullName, "RetailerSequencer", host, port, Group.FE));
+		channelManager.addChannel(new Channel(fullName, "RetailerSequencer", host, port, Group.SEQUENCER));
 		
 		host = ConfigureManager.getInstance().getString("RetailerRM" + replicaIndex + "Host");
 		port = ConfigureManager.getInstance().getInt("RetailerRM" + replicaIndex + "Port");
@@ -73,7 +73,7 @@ public class RetailerReplica {
 					//DO NOTHING
 				}else if(channel.group == Group.REPLICA
 					&& channel.peerProcessName.equals(goodReplicaName)){
-					Message msg = new AskSyncMessage(channel.localProcessName
+					Message msg = new AskInitSyncMessage(channel.localProcessName
 							, ++channel.localSeq
 							, channel.peerSeq);
 					channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
