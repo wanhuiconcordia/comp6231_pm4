@@ -107,17 +107,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 		return null;
 	}
 	@Override
-	public boolean registerRetailer(String retailerName, int sequencerID) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean unregisterRegailer(String retailerName, int sequencerID) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public ItemList shippingGoods(ItemList itemList, String reatilername,
+	public ItemList shippingGoods(ItemList itemList,
 			int sequencerID) {
 		// TODO Auto-generated method stub
 		return null;

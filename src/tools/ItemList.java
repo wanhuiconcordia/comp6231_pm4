@@ -16,7 +16,9 @@ public class ItemList implements Serializable{
 	public ItemList(){
 		innerItemList = new ArrayList<Item>();
 	}
-	
+	public ItemList(int i){
+		innerItemList = new ArrayList<Item>(i);
+	}
 	/**
 	 * Constructor 
 	 * @param Item item

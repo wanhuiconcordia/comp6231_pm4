@@ -44,24 +44,8 @@ public interface WarehouseInterface {
 	@WebMethod ItemList getProducts (String productID, String manufacturerName, int sequencerID);
 	/**
 	 * registerRetailer
-	 * @param retailerName
 	 * @param sequencerID
 	 * @return true if success otherwise return false;
 	 */
-	boolean registerRetailer (String retailerName, int sequencerID);
-	/**
-	 * unregisterRegailer
-	 * @param retailerName
-	 * @param sequencerID
-	 * @return true if success otherwise return false;
-	 */
-	boolean unregisterRegailer (String retailerName, int sequencerID);
-	/**
-	 * shippingGoods
-	 * @param itemList
-	 * @param reatilername
-	 * @param sequencerID
-	 * @return ItemList
-	 */
-	@WebMethod ItemList shippingGoods (ItemList itemList,String reatilername, int sequencerID);
+	@WebMethod ItemList shippingGoods (ItemList itemList, int sequencerID);
 }

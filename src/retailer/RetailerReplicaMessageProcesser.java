@@ -35,11 +35,11 @@ import warehouse.WarehouseInterface;
 public class RetailerReplicaMessageProcesser extends MessageProcesser {
 
 	public RetailerReplica retailerReplica;
-	
+
 	public RetailerReplicaMessageProcesser(RetailerReplica retailerReplica){
 		this.retailerReplica = retailerReplica;
 	}
-	
+
 	@Override
 	public void processNewRequest(ChannelManager channelManager, Channel channel, Message msg) {
 		if(msg.action == Action.ACK){
@@ -51,11 +51,11 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 				channel.localSeq = 0;
 				channel.peerSeq = msg.senderSeq;
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
-							, channel.peerPort
-							, new DoSyncMessage(channel.localProcessName
-									, ++channel.localSeq
-									, channel.peerSeq
-									, retailerReplica.customerManager.customers));
+						, channel.peerPort
+						, new DoSyncMessage(channel.localProcessName
+								, ++channel.localSeq
+								, channel.peerSeq
+								, retailerReplica.customerManager.customers));
 				break;
 			case doSync:
 				ackBack(channelManager, channel);
@@ -81,7 +81,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 			case HEART_BEAT:
 				ackBack(channelManager, channel);
 				break;
-			
+
 			case signIn:
 				ackBack(channelManager, channel);
 				RetailerSequencerSignInMessage signInMsg = (RetailerSequencerSignInMessage)msg;
@@ -95,7 +95,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
 					FEChannel.isWaitingForRespose = true;
 				}
-				
+
 				break;
 			case signUp:
 				ackBack(channelManager, channel);
@@ -108,10 +108,10 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 						, signUpMsg.state
 						, signUpMsg.zip
 						, signUpMsg.country);
-				
+
 				if(channelManager.channelMap.containsKey("RetailerFE")){
 					Channel FEChannel = channelManager.channelMap.get("RetailerFE");
-					
+
 					//TRIGGER AN ERROR.
 					if(FEChannel.localProcessName.endsWith("4")){
 						signUpResult = new SignUpResult(true, 10, "good signup");
@@ -125,10 +125,10 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 				}
 
 				break;
-				
+
 			case getCatelog:
 				ackBack(channelManager, channel);
-				
+
 				RetailerSequencerGetCatelogMessage getCatalogMsg = (RetailerSequencerGetCatelogMessage)msg;
 				ItemList itemList = new ItemList();
 				HashMap<String, Item> itemsMap = new HashMap<String, Item>();
@@ -149,7 +149,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 				for(Item item: itemsMap.values()){
 					itemList.innerItemList.add(item);
 				}
-				
+
 				if(channelManager.channelMap.containsKey("RetailerFE")){
 					Channel FEChannel = channelManager.channelMap.get("RetailerFE");
 					Message responsMsg = new RetailerReplicaGetCatalogResultMessage(FEChannel.localProcessName
@@ -164,87 +164,88 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 			case submitOrder:
 				ackBack(channelManager, channel);
 				RetailerSequencerSubmitOrderMessage submitOrderMsg = (RetailerSequencerSubmitOrderMessage)msg;
-				
+
 				ItemShippingStatusList itemShippingStatusList= new ItemShippingStatusList();
 				Customer currentCustomer = retailerReplica.customerManager.getCustomerByReferenceNumber(submitOrderMsg.customerReferenceNumber);
-				if(currentCustomer != null){
-					if(submitOrderMsg.itemList == null){
-					}else if(submitOrderMsg.itemList.innerItemList.isEmpty()){
-					}else{
-						HashMap<String, ItemShippingStatus> receivedItemShippingStatusMap = new HashMap<String, ItemShippingStatus>();
-						HashMap<String, Item> orderMap = new HashMap<String, Item>();
-						for(Item item: submitOrderMsg.itemList.innerItemList){
-							Item itemImpl = new Item(item);
-							if(itemImpl.quantity > 0){
-								Item itemInOrderMap = orderMap.get(itemImpl.productID);
-								if(itemInOrderMap == null){
-									orderMap.put(item.productID, new Item(itemImpl));
-								}else{
-									itemInOrderMap.quantity += itemImpl.quantity;
-								}
+				if(currentCustomer != null 
+						&& submitOrderMsg.itemList == null 
+						&& submitOrderMsg.itemList.innerItemList.isEmpty()){
+					HashMap<String, ItemShippingStatus> receivedItemShippingStatusMap = new HashMap<String, ItemShippingStatus>();
+					HashMap<String, Item> orderMap = new HashMap<String, Item>();
+					for(Item item: submitOrderMsg.itemList.innerItemList){
+						Item itemImpl = new Item(item);
+						System.out.println("item orderd"+itemImpl.toString());
+						if(itemImpl.quantity > 0){
+							Item itemInOrderMap = orderMap.get(itemImpl.productID);
+							if(itemInOrderMap == null){
+								orderMap.put(item.productID, new Item(itemImpl));
+							}else{
+								itemInOrderMap.quantity += itemImpl.quantity;
 							}
 						}
-						//System.out.println("order map:" +orderMap);
-						
-						for(WarehouseInterface thisWarehouse: retailerReplica.warehouseFEList){
-							int itemRequestFromWarehouseCount = orderMap.size();
-							
-							if(itemRequestFromWarehouseCount > 0)
-							{
-								ItemList itemRequestFromWarehouseList = new ItemList(itemRequestFromWarehouseCount);
-								System.out.println("itemRequestFromWarehouseList size : "+ itemRequestFromWarehouseList.innerItemList.size());
-								int i = 0;
-								for(Item orderItem: orderMap.values()){
-									System.out.println("orderItem: "+ orderItem);
-									itemRequestFromWarehouseList.innerItemList.add(i, orderItem);
-									i++;
-								}
-								System.out.println("itemRequestFromWarehouseList size after adding: "+ itemRequestFromWarehouseList.innerItemList.size());
-								ItemList itemsGotFromCurrentWarehouse=null;
-								
-								if(itemsGotFromCurrentWarehouse == null){
-									System.out.println("warehouse return null");
-								}else if(itemsGotFromCurrentWarehouse.innerItemList.isEmpty()){
-									System.out.println("warehouse return empty arrry");
-								}else{
-									String log = new String();
-									for(Item item: itemsGotFromCurrentWarehouse.innerItemList){
-										Item itemInReceivedItemShippingStatusMap = receivedItemShippingStatusMap.get(item.productID);
-										if(itemInReceivedItemShippingStatusMap == null){
-											receivedItemShippingStatusMap.put(item.productID, new ItemShippingStatus(item, true));
-										}else{
-											itemInReceivedItemShippingStatusMap.quantity += item.quantity;
-										}
+					}
+					System.out.println("order map:" +orderMap);
 
-										Item itemInOrderMap = orderMap.get(item.productID);
-										if(itemInOrderMap == null){
-											System.out.println("Warehouse side error. never request this item from warehouse, but the warehouse return this item.");
-										}else{
-											itemInOrderMap.quantity -= item.quantity;
-											if(itemInOrderMap.quantity == 0){
-												orderMap.remove(item.productID);
-											}
+					for(WarehouseInterface thisWarehouse: retailerReplica.warehouseFEList){
+						int itemRequestFromWarehouseCount = orderMap.size();
+
+						if(itemRequestFromWarehouseCount > 0)
+						{
+							ItemList itemRequestFromWarehouseList = new ItemList(itemRequestFromWarehouseCount);
+							System.out.println("itemRequestFromWarehouseList size : "+ itemRequestFromWarehouseList.innerItemList.size());
+							int i = 0;
+							for(Item orderItem: orderMap.values()){
+								System.out.println("orderItem: "+ orderItem);
+								itemRequestFromWarehouseList.innerItemList.add(i, orderItem);
+								i++;
+							}
+							System.out.println("itemRequestFromWarehouseList size after adding: "+ itemRequestFromWarehouseList.innerItemList.size());
+							ItemList itemsGotFromCurrentWarehouse=null;
+
+							itemsGotFromCurrentWarehouse = thisWarehouse.shippingGoods(itemRequestFromWarehouseList, submitOrderMsg.sequencerID);
+
+							if(itemsGotFromCurrentWarehouse == null){
+								System.out.println("warehouse return null");
+							}else if(itemsGotFromCurrentWarehouse.innerItemList.isEmpty()){
+								System.out.println("warehouse return empty arrry");
+							}else{
+								for(Item item: itemsGotFromCurrentWarehouse.innerItemList){
+									Item itemInReceivedItemShippingStatusMap = receivedItemShippingStatusMap.get(item.productID);
+									if(itemInReceivedItemShippingStatusMap == null){
+										receivedItemShippingStatusMap.put(item.productID, new ItemShippingStatus(item, true));
+									}else{
+										itemInReceivedItemShippingStatusMap.quantity += item.quantity;
+									}
+
+									Item itemInOrderMap = orderMap.get(item.productID);
+									if(itemInOrderMap == null){
+										System.out.println("Warehouse side error. never request this item from warehouse, but the warehouse return this item.");
+									}else{
+										itemInOrderMap.quantity -= item.quantity;
+										if(itemInOrderMap.quantity == 0){
+											orderMap.remove(item.productID);
 										}
 									}
 								}
-							}else{
-								break;
 							}
+						}else{
+							break;
 						}
-						
-						ArrayList<ItemShippingStatus> tmpItemShippingStatusList = new ArrayList<ItemShippingStatus>();
-						
-						for(ItemShippingStatus itemInReceivedItemShippingStatusMap: receivedItemShippingStatusMap.values()){
-							tmpItemShippingStatusList.add(itemInReceivedItemShippingStatusMap);
-						}
-						
-						for(Item itemInOrderMap: orderMap.values()){
-							tmpItemShippingStatusList.add(new ItemShippingStatus(itemInOrderMap, false));
-						}
-						
-						itemShippingStatusList.setItems(tmpItemShippingStatusList);
+					}
+
+					ArrayList<ItemShippingStatus> tmpItemShippingStatusList = new ArrayList<ItemShippingStatus>();
+
+					for(ItemShippingStatus itemInReceivedItemShippingStatusMap: receivedItemShippingStatusMap.values()){
+						tmpItemShippingStatusList.add(itemInReceivedItemShippingStatusMap);
+					}
+
+					for(Item itemInOrderMap: orderMap.values()){
+						tmpItemShippingStatusList.add(new ItemShippingStatus(itemInOrderMap, false));
+					}
+
+					itemShippingStatusList.setItems(tmpItemShippingStatusList);
 				}
-				
+
 				if(channelManager.channelMap.containsKey("RetailerFE")){
 					Channel FEChannel = channelManager.channelMap.get("RetailerFE");
 					Message responsMsg = new RetailerReplicaSubmitOrderMessage(FEChannel.localProcessName
@@ -254,7 +255,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 					FEChannel.backupPacket = new Packet(FEChannel.peerProcessName, FEChannel.peerHost,  FEChannel.peerPort, responsMsg); 
 					FEChannel.isWaitingForRespose = true;
 				}
-				
+
 				break;
 			default:
 				break;
@@ -266,7 +267,7 @@ public class RetailerReplicaMessageProcesser extends MessageProcesser {
 	public void processDuplicaRequest(ChannelManager channelManager,
 			Channel channel, Message msg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
