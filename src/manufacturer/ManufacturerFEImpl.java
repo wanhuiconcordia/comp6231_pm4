@@ -81,7 +81,7 @@ public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new ManufacturerFEProcessPurchaseOrderMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, itemList));
 				channel.isWaitingForRespose = true;
@@ -117,7 +117,7 @@ public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new ManufacturerFEGetProductInfoMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, aProdName));
 				channel.isWaitingForRespose = true;
@@ -154,7 +154,7 @@ public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new ManufacturerFEReceivePaymentMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, orderNum
 								, totalPrice));
@@ -191,7 +191,7 @@ public class ManufacturerFEImpl extends FE implements ManufacturerInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new ManufacturerFEGetProductListMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort));
 				channel.isWaitingForRespose = true;
 				

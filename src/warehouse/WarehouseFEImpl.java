@@ -73,7 +73,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new WarehouseFEGetProductsByIDMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, productID));
 				channel.isWaitingForRespose = true;
@@ -108,7 +108,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new WarehouseFEGetProductsByTypeMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, productType));
 				channel.isWaitingForRespose = true;
@@ -144,7 +144,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new WarehouseFEGetProductsByRegisteredManufacturersMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, manufacturerName));
 				channel.isWaitingForRespose = true;
@@ -181,7 +181,7 @@ public class WarehouseFEImpl extends FE implements WarehouseInterface {
 				channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 						, channel.peerPort
 						, new WarehouseFEShippingGoodsMessage(channel.localProcessName
-								, channel.localSeq
+								, ++channel.localSeq
 								, channel.peerPort
 								, itemList));
 				channel.isWaitingForRespose = true;

@@ -80,7 +80,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFEGetCatelogMessage(channel.localProcessName
-						, channel.localSeq
+						, ++channel.localSeq
 						, channel.peerPort
 						, customerReferenceNumber));
 		channel.isWaitingForRespose = true;
@@ -104,7 +104,7 @@ public class RetailerFEImpl extends FE implements RetailerInterface {
 		channel.backupPacket = new Packet(channel.peerProcessName, channel.peerHost
 				, channel.peerPort
 				, new RetailerFESubmitOrderMessage(channel.localProcessName
-						, channel.localSeq
+						, ++channel.localSeq
 						, channel.peerPort
 						, customerReferenceNumber
 						, itemOrderList));
